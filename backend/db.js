@@ -45,17 +45,26 @@ const TransactionSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }
 }, { timestamps: true });
 
-let AgentModel, ConversationModel, TransactionModel;
+const FaucetSchema = new mongoose.Schema({
+  address: { type: String, required: true, unique: true },
+  name: { type: String, required: true },
+  creator: { type: String, required: true },
+  network: { type: String, required: true },
+  abi: { type: Array, required: true }
+}, { timestamps: true });
+
+let AgentModel, ConversationModel, TransactionModel, FaucetModel;
 
 export async function connectDb(mongoUri) {
   if (!mongoUri) {
     throw new Error('MONGO_URI is not defined in the environment variables.');
   }
-  await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000 });
+  await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 5000, family: 4 });
   console.log('Successfully connected to MongoDB.');
   AgentModel = mongoose.model('Agent', AgentSchema);
   ConversationModel = mongoose.model('Conversation', ConversationSchema);
   TransactionModel = mongoose.model('Transaction', TransactionSchema);
+  FaucetModel = mongoose.model('Faucet', FaucetSchema);
 }
 
 // Database Actions Wrapper
@@ -155,5 +164,23 @@ export const db = {
 
   async getTransactions(query = {}) {
     return await TransactionModel.find(query).sort({ timestamp: -1 });
+  },
+
+  async registerFaucet(faucetData) {
+    const cleanAddress = faucetData.address.toLowerCase();
+    const existing = await FaucetModel.findOne({ address: cleanAddress });
+    if (existing) return existing;
+    const faucet = new FaucetModel({
+      ...faucetData,
+      address: cleanAddress,
+      creator: faucetData.creator.toLowerCase()
+    });
+    return await faucet.save();
+  },
+
+  async getFaucets(network) {
+    const query = {};
+    if (network) query.network = network;
+    return await FaucetModel.find(query).sort({ createdAt: -1 }).limit(10);
   }
 };

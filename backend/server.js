@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { ethers } from 'ethers';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { connectDb, db } from './db.js';
+import solc from 'solc';
 
 // Load environment variables
 dotenv.config();
@@ -483,6 +484,173 @@ app.get('/api/analytics/:creatorAddress', async (req, res) => {
 
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// 10. Sandbox AI Smart Contract Generation
+app.post('/api/sandbox/generate', async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    if (!genAI) {
+      return res.status(500).json({ error: 'AI provider not configured' });
+    }
+
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-3.6-flash',
+      systemInstruction: `You are a Solidity Smart Contract Generator. Your only job is to write valid, deployable Solidity smart contracts for the BOT Chain (EVM chain).
+You must output ONLY valid Solidity source code. 
+CRITICAL: Do NOT wrap the code in markdown code blocks like \`\`\`solidity or \`\`\`. Start directly with "// SPDX-License-Identifier: MIT" and "pragma solidity". 
+Do NOT include any introduction, explanations, notes, or chat text. Output only raw code. Ensure compilation safety (e.g., standard libraries, correct licenses, no compile errors).`
+    });
+
+    const result = await model.generateContent(prompt);
+    let code = result.response.text().trim();
+
+    // In case the AI still wraps it in markdown block quotes
+    if (code.startsWith('```')) {
+      code = code.replace(/^```solidity\n?|^```\n?/, '').replace(/```$/, '').trim();
+    }
+
+    res.json({ success: true, code });
+  } catch (error) {
+    console.error('Sandbox contract generation error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 11. Sandbox Solidity compilation
+app.post('/api/sandbox/compile', (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) {
+      return res.status(400).json({ success: false, error: 'Code is required' });
+    }
+
+    const input = {
+      language: 'Solidity',
+      sources: {
+        'Contract.sol': {
+          content: code
+        }
+      },
+      settings: {
+        outputSelection: {
+          '*': {
+            '*': ['abi', 'evm.bytecode']
+          }
+        }
+      }
+    };
+
+    const output = JSON.parse(solc.compile(JSON.stringify(input)));
+
+    // Check for errors
+    if (output.errors) {
+      const errors = output.errors.filter(err => err.severity === 'error');
+      if (errors.length > 0) {
+        return res.status(400).json({
+          success: false,
+          errors: errors.map(err => err.formattedMessage)
+        });
+      }
+    }
+
+    // Get contract details
+    const contracts = output.contracts['Contract.sol'];
+    if (!contracts || Object.keys(contracts).length === 0) {
+      return res.status(400).json({ success: false, error: 'No contracts found in compilation' });
+    }
+
+    const contractName = Object.keys(contracts)[0];
+    const abi = contracts[contractName].abi;
+    const bytecode = contracts[contractName].evm.bytecode.object;
+
+    res.json({
+      success: true,
+      contractName,
+      abi,
+      bytecode
+    });
+  } catch (error) {
+    console.error('Compilation error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 12. Sandbox AI contract debug/fix
+app.post('/api/sandbox/fix', async (req, res) => {
+  try {
+    const { code, error } = req.body;
+    if (!code) {
+      return res.status(400).json({ error: 'Code is required' });
+    }
+
+    if (!genAI) {
+      return res.status(500).json({ error: 'AI provider not configured' });
+    }
+
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-3.6-flash',
+      systemInstruction: `You are a Solidity Smart Contract Debugger. You will be given a Solidity contract that fails to compile or deploy, along with the error message/stack trace.
+Your task is to analyze the error, identify the bugs, and return the fixed, valid Solidity contract source code.
+You must output ONLY valid Solidity source code.
+CRITICAL: Do NOT wrap the code in markdown code blocks like \`\`\`solidity or \`\`\`. Start directly with "// SPDX-License-Identifier: MIT" and "pragma solidity". 
+Do NOT include any explanations, introduction, notes, or chat text. Output only raw code.`
+    });
+
+    const prompt = `Here is the current Solidity code:
+\`\`\`solidity
+${code}
+\`\`\`
+
+Here is the compilation or deployment error:
+${error}
+
+Please provide the corrected Solidity contract source code.`;
+
+    const result = await model.generateContent(prompt);
+    let fixedCode = result.response.text().trim();
+
+    // Clean markdown wraps if generated
+    if (fixedCode.startsWith('```')) {
+      fixedCode = fixedCode.replace(/^```solidity\n?|^```\n?/, '').replace(/```$/, '').trim();
+    }
+
+    res.json({ success: true, code: fixedCode });
+  } catch (err) {
+    console.error('Sandbox fix error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Register a deployed faucet
+app.post('/api/sandbox/faucets', async (req, res) => {
+  try {
+    const { address, name, creator, network, abi } = req.body;
+    if (!address || !name || !creator || !network || !abi) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    const faucet = await db.registerFaucet({ address, name, creator, network, abi });
+    res.json({ success: true, faucet });
+  } catch (err) {
+    console.error('Register faucet error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Fetch active faucets
+app.get('/api/sandbox/faucets', async (req, res) => {
+  try {
+    const { network } = req.query;
+    const faucets = await db.getFaucets(network);
+    res.json({ success: true, faucets });
+  } catch (err) {
+    console.error('Get faucets error:', err);
+    res.status(500).json({ error: err.message });
   }
 });
 

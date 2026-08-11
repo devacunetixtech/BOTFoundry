@@ -11,6 +11,7 @@ import { Chat } from './components/Chat';
 import { CreatorProfile } from './components/CreatorProfile';
 import { KnowledgeBaseManager } from './components/KnowledgeBaseManager';
 import { AgentDetails } from './components/AgentDetails';
+import { Sandbox } from './components/Sandbox';
 
 
 interface Agent {
@@ -73,6 +74,10 @@ const AppContent: React.FC = () => {
         
         {currentTab === 'marketplace' && (
           <Marketplace onRunAgent={handleRunAgent} />
+        )}
+
+        {currentTab === 'sandbox' && (
+          <Sandbox />
         )}
         
         {currentTab === 'builder' && (

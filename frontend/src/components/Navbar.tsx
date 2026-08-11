@@ -51,6 +51,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   const navItems = [
     { id: 'marketplace', label: 'Marketplace', requiresAuth: false },
+    { id: 'sandbox', label: 'Sandbox', requiresAuth: false },
     { id: 'builder', label: 'Build Agent', requiresAuth: true },
     { id: 'dashboard', label: 'Dashboard', requiresAuth: true },
     { id: 'analytics', label: 'Analytics', requiresAuth: true },
@@ -113,6 +114,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               Marketplace
+            </button>
+            <button
+              onClick={() => setCurrentTab('sandbox')}
+              className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                currentTab === 'sandbox' 
+                  ? 'bg-brand-surface text-brand-text-primary shadow-sm font-semibold' 
+                  : 'text-brand-text-secondary hover:text-brand-text-primary'
+              }`}
+            >
+              Sandbox
             </button>
             {isConnected && (
               <>
