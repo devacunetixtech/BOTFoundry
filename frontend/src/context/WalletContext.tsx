@@ -79,7 +79,7 @@ const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
 const getEthereumProvider = () => {
   if (typeof window === 'undefined') return null;
-  return window.ethereum || (window as any).bitkeep?.ethereum || null;
+  return (window as any).bitkeep?.ethereum || window.ethereum || null;
 };
 
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -90,6 +90,41 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [isTestnet, setIsTestnet] = useState<boolean>(false);
   const [contractAddress, setContractAddress] = useState<string>('');
+  const [walletProvider, setWalletProvider] = useState<any>(null);
+
+  // Detect EVM provider (handles delayed injection on mobile dApp browsers)
+  useEffect(() => {
+    const checkProvider = () => {
+      const p = getEthereumProvider();
+      if (p) {
+        setWalletProvider(p);
+        return true;
+      }
+      return false;
+    };
+
+    if (checkProvider()) return;
+
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (checkProvider() || attempts >= 30) {
+        clearInterval(interval);
+      }
+    }, 100);
+
+    const handleInitialized = () => {
+      checkProvider();
+    };
+    window.addEventListener('ethereum#initialized', handleInitialized);
+    window.addEventListener('bitkeep#initialized', handleInitialized);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('ethereum#initialized', handleInitialized);
+      window.removeEventListener('bitkeep#initialized', handleInitialized);
+    };
+  }, []);
 
   // Set default contract address depending on the active network
   useEffect(() => {
@@ -132,7 +167,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const switchNetwork = async (type: 'mainnet' | 'testnet'): Promise<boolean> => {
-    const ethereum = getEthereumProvider();
+    const ethereum = walletProvider || getEthereumProvider();
     if (!ethereum) {
       console.warn('Switching mock network to:', type);
       setChainId(type === 'testnet' ? '0x3c8' : '0x2a5');
@@ -165,7 +200,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const connectWallet = async () => {
-    const ethereum = getEthereumProvider();
+    const ethereum = walletProvider || getEthereumProvider();
     if (!ethereum) {
       console.warn('No EVM wallet detected. Entering mock wallet demo mode.');
       setIsConnecting(true);
@@ -209,7 +244,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Listen for account and chain changes
   useEffect(() => {
-    const ethereum = getEthereumProvider();
+    const ethereum = walletProvider || getEthereumProvider();
     if (ethereum) {
       const handleAccountsChanged = async (accounts: string[]) => {
         if (accounts.length > 0) {
@@ -249,7 +284,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         }
       };
     }
-  }, [address]);
+  }, [walletProvider, address]);
 
   // --- SMART CONTRACT OPERATIONS ---
 
