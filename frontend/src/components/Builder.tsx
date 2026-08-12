@@ -25,7 +25,7 @@ interface BuilderProps {
 }
 
 export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
-  const { isConnected, isTestnet, registerAgentOnChain } = useWallet();
+  const { isConnected, isTestnet, registerAgentOnChain, address } = useWallet();
   const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
   const [txHash, setTxHash] = useState<string | null>(null);
@@ -100,7 +100,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
           pricePerRequest: priceWei,
           metadataURI,
           avatar,
-          creator: window.ethereum ? (await new ethers.BrowserProvider(window.ethereum).getSigner()).address.toLowerCase() : '0x71c7656ec7ab88b098defb751b7401b5f6d8976f',
+          creator: address ? address.toLowerCase() : '0x71c7656ec7ab88b098defb751b7401b5f6d8976f',
           network: isTestnet ? 'testnet' : 'mainnet'
         })
       });

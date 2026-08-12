@@ -47,7 +47,7 @@ interface AgentDetailsProps {
 }
 
 export const AgentDetails: React.FC<AgentDetailsProps> = ({ agent, onBack, onRunAgent }) => {
-  const { address, isTestnet, updateAgentOnChain } = useWallet();
+  const { address, isTestnet, updateAgentOnChain, contractAddress } = useWallet();
   const [activeTab, setActiveTab] = useState<'overview' | 'config' | 'analytics' | 'knowledge' | 'pricing' | 'deployments' | 'versions'>('overview');
   
   // State for Configuration edit fields
@@ -305,7 +305,7 @@ axios.post('${apiEndpointUrl}', {
                 <div className="flex justify-between">
                   <span className="text-brand-text-secondary">EVM Contract CA:</span>
                   <span className="font-mono text-brand-text-primary text-[11px] hover:text-brand-primary cursor-pointer flex items-center gap-0.5">
-                    {formatAddress(window.ethereum ? '0xD5452816194a3784dBa983426cCe7c122F4abd30' : '0x546307af427902A75771434Df831d88219784E19')}
+                    {formatAddress(contractAddress || '0x380cD522A27B84d38E8988483da89660EcD8c141')}
                     <ExternalLink size={10} />
                   </span>
                 </div>

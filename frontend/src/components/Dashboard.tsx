@@ -102,7 +102,7 @@ const AnimatedCounter: React.FC<{
 };
 
 export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab, onEditAgent }) => {
-  const { address, balance, isTestnet } = useWallet();
+  const { address, balance, isTestnet, connectWallet } = useWallet();
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -171,7 +171,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab, onEditAgent
         </p>
         <div className="mt-6">
           <button 
-            onClick={() => window.ethereum ? useWallet().connectWallet() : alert('EVM wallet not detected.')}
+            onClick={connectWallet}
             className="btn-primary select-none cursor-pointer text-xs"
           >
             Connect Wallet

@@ -438,8 +438,12 @@ export const Sandbox: React.FC = () => {
     setIsDeploying(true);
     setDeployError('');
     try {
-      // Connect to window.ethereum using ethers v6 BrowserProvider
-      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      // Connect to EVM provider supporting MetaMask, Bitget, etc.
+      const ethereum = window.ethereum || (window as any).bitkeep?.ethereum;
+      if (!ethereum) {
+        throw new Error('EVM Wallet provider not found. Please install MetaMask or Bitget Wallet.');
+      }
+      const provider = new ethers.BrowserProvider(ethereum);
       const signer = await provider.getSigner();
 
       const factory = new ethers.ContractFactory(abi, bytecode, signer);

@@ -77,6 +77,11 @@ interface WalletContextType {
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
+const getEthereumProvider = () => {
+  if (typeof window === 'undefined') return null;
+  return window.ethereum || (window as any).bitkeep?.ethereum || null;
+};
+
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [address, setAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState<string>('0');
@@ -127,7 +132,8 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const switchNetwork = async (type: 'mainnet' | 'testnet'): Promise<boolean> => {
-    if (!window.ethereum) {
+    const ethereum = getEthereumProvider();
+    if (!ethereum) {
       console.warn('Switching mock network to:', type);
       setChainId(type === 'testnet' ? '0x3c8' : '0x2a5');
       return true;
@@ -135,16 +141,16 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     const network = NETWORKS[type];
     try {
-      await window.ethereum.request({
+      await ethereum.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: network.chainId }],
       });
       return true;
     } catch (switchError: any) {
-      // This error code indicates that the chain has not been added to MetaMask.
+      // This error code indicates that the chain has not been added to MetaMask/Wallet.
       if (switchError.code === 4902) {
         try {
-          await window.ethereum.request({
+          await ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [network],
           });
@@ -159,7 +165,8 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const connectWallet = async () => {
-    if (!window.ethereum) {
+    const ethereum = getEthereumProvider();
+    if (!ethereum) {
       console.warn('No EVM wallet detected. Entering mock wallet demo mode.');
       setIsConnecting(true);
       await new Promise(resolve => setTimeout(resolve, 600));
@@ -173,8 +180,8 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     
     setIsConnecting(true);
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      const provider = new ethers.BrowserProvider(ethereum);
+      const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
       if (accounts.length > 0) {
         await updateAccountDetails(provider, accounts[0]);
         
@@ -202,10 +209,11 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Listen for account and chain changes
   useEffect(() => {
-    if (window.ethereum) {
+    const ethereum = getEthereumProvider();
+    if (ethereum) {
       const handleAccountsChanged = async (accounts: string[]) => {
         if (accounts.length > 0) {
-          const provider = new ethers.BrowserProvider(window.ethereum);
+          const provider = new ethers.BrowserProvider(ethereum);
           await updateAccountDetails(provider, accounts[0]);
         } else {
           disconnectWallet();
@@ -215,27 +223,29 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const handleChainChanged = async (chainIdHex: string) => {
         setChainId(chainIdHex);
         if (address) {
-          const provider = new ethers.BrowserProvider(window.ethereum);
+          const provider = new ethers.BrowserProvider(ethereum);
           const balanceVal = await provider.getBalance(address);
           setBalance(Number(ethers.formatEther(balanceVal)).toFixed(4));
         }
       };
 
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
+      ethereum.on('accountsChanged', handleAccountsChanged);
+      ethereum.on('chainChanged', handleChainChanged);
 
       // Auto reconnect
-      window.ethereum.request({ method: 'eth_accounts' }).then(async (accounts: string[]) => {
+      ethereum.request({ method: 'eth_accounts' }).then(async (accounts: string[]) => {
         if (accounts.length > 0) {
-          const provider = new ethers.BrowserProvider(window.ethereum);
+          const provider = new ethers.BrowserProvider(ethereum);
           await updateAccountDetails(provider, accounts[0]);
         }
       }).catch(console.error);
 
       return () => {
-        if (window.ethereum) {
-          window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-          window.ethereum.removeListener('chainChanged', handleChainChanged);
+        if (ethereum) {
+          if (ethereum.removeListener) {
+            ethereum.removeListener('accountsChanged', handleAccountsChanged);
+            ethereum.removeListener('chainChanged', handleChainChanged);
+          }
         }
       };
     }
@@ -244,10 +254,11 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // --- SMART CONTRACT OPERATIONS ---
 
   const getContractInstance = async () => {
-    if (!window.ethereum || !address) {
+    const ethereum = getEthereumProvider();
+    if (!ethereum || !address) {
       throw new Error('Wallet not connected');
     }
-    const provider = new ethers.BrowserProvider(window.ethereum);
+    const provider = new ethers.BrowserProvider(ethereum);
     const signer = await provider.getSigner();
     return new ethers.Contract(contractAddress, CONTRACT_ABI, signer);
   };
@@ -331,11 +342,12 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Read the caller's (or a given account's) claimable balance from the pull-payment ledger.
   // Uses a read-only provider so it works without prompting the wallet.
   const getPendingWithdrawal = async (account?: string): Promise<string> => {
-    if (!window.ethereum || !contractAddress) return '0';
+    const ethereum = getEthereumProvider();
+    if (!ethereum || !contractAddress) return '0';
     const target = account || address;
     if (!target) return '0';
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      const provider = new ethers.BrowserProvider(ethereum);
       const contract = new ethers.Contract(contractAddress, CONTRACT_ABI, provider);
       const balance = await contract.pendingWithdrawals(target);
       return balance.toString();
