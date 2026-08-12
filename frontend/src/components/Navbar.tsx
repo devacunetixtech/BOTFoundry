@@ -197,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Wrong Network Warning */}
           {isWrongNetwork && (
             <button
-              onClick={() => switchNetwork('testnet')}
+              onClick={() => switchNetwork('mainnet')}
               className="flex items-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 px-3 py-1.5 rounded-full text-xs font-semibold"
             >
               <AlertTriangle size={12} />

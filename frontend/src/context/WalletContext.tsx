@@ -126,41 +126,6 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      console.warn('No EVM wallet detected. Entering mock wallet demo mode.');
-      setIsConnecting(true);
-      await new Promise(resolve => setTimeout(resolve, 600));
-      setAddress('0x71C7656EC7ab88b098defB751B7401B5f6d8976F');
-      setBalance('124.5000');
-      setChainId('0x2a5');
-      setIsConnected(true);
-      setIsConnecting(false);
-      return;
-    }
-    
-    setIsConnecting(true);
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      if (accounts.length > 0) {
-        await updateAccountDetails(provider, accounts[0]);
-      }
-    } catch (error: any) {
-      console.error('Error connecting wallet:', error);
-      alert(error.message || 'Failed to connect wallet');
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const disconnectWallet = () => {
-    setAddress(null);
-    setBalance('0');
-    setChainId(null);
-    setIsConnected(false);
-  };
-
   const switchNetwork = async (type: 'mainnet' | 'testnet'): Promise<boolean> => {
     if (!window.ethereum) {
       console.warn('Switching mock network to:', type);
@@ -191,6 +156,48 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       console.error('Error switching network:', switchError);
     }
     return false;
+  };
+
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      console.warn('No EVM wallet detected. Entering mock wallet demo mode.');
+      setIsConnecting(true);
+      await new Promise(resolve => setTimeout(resolve, 600));
+      setAddress('0x71C7656EC7ab88b098defB751B7401B5f6d8976F');
+      setBalance('124.5000');
+      setChainId('0x2a5');
+      setIsConnected(true);
+      setIsConnecting(false);
+      return;
+    }
+    
+    setIsConnecting(true);
+    try {
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      if (accounts.length > 0) {
+        await updateAccountDetails(provider, accounts[0]);
+        
+        // Check current chain ID. If not BOT Chain Mainnet, automatically prompt to switch to Mainnet.
+        const network = await provider.getNetwork();
+        const chainIdNum = Number(network.chainId);
+        if (chainIdNum !== 677) {
+          await switchNetwork('mainnet');
+        }
+      }
+    } catch (error: any) {
+      console.error('Error connecting wallet:', error);
+      alert(error.message || 'Failed to connect wallet');
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const disconnectWallet = () => {
+    setAddress(null);
+    setBalance('0');
+    setChainId(null);
+    setIsConnected(false);
   };
 
   // Listen for account and chain changes
