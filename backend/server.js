@@ -183,6 +183,17 @@ function slugify(text) {
 
 // --- API ROUTES ---
 
+// Health check / keep-alive ping endpoint
+// Used by external cron services (e.g. cron-job.org, UptimeRobot) to prevent
+// Render free-tier cold starts. Safe to call as frequently as every 5 minutes.
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString()
+  });
+});
+
 // 1. Get all agents
 app.get('/api/agents', async (req, res) => {
   try {
