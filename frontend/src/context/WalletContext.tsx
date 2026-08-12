@@ -133,7 +133,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       await new Promise(resolve => setTimeout(resolve, 600));
       setAddress('0x71C7656EC7ab88b098defB751B7401B5f6d8976F');
       setBalance('124.5000');
-      setChainId('0x3c8');
+      setChainId('0x2a5');
       setIsConnected(true);
       setIsConnecting(false);
       return;

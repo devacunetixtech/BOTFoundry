@@ -194,6 +194,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Root route — friendly response for browser/cron hits on base URL
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', service: 'BOTFoundry API', version: '1.0.0' });
+});
+
 // 1. Get all agents
 app.get('/api/agents', async (req, res) => {
   try {
