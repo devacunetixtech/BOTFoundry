@@ -141,7 +141,7 @@ export const KnowledgeBaseManager: React.FC = () => {
             <button 
               onClick={handleFileUploadMock}
               disabled={uploading}
-              className="mt-6 bg-brand-bg hover:bg-brand-elevated border border-brand-border px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer"
+              className="btn-secondary select-none cursor-pointer text-xs mt-6"
             >
               {uploading ? `Vectorizing ${uploadProgress}%...` : 'Select File'}
             </button>
@@ -170,11 +170,11 @@ export const KnowledgeBaseManager: React.FC = () => {
                 value={newUrl}
                 onChange={(e) => setNewUrl(e.target.value)}
                 required
-                className="w-full bg-brand-bg/50 border border-brand-border px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-brand-primary text-brand-text-primary placeholder-brand-text-secondary"
+                className="input-field w-full text-xs placeholder-brand-text-secondary !rounded-xl"
               />
               <button 
                 type="submit"
-                className="w-full flex items-center justify-center gap-1 bg-brand-text-primary text-brand-bg hover:bg-brand-text-primary/90 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                className="btn-primary w-full text-xs select-none cursor-pointer flex items-center justify-center gap-1"
               >
                 Crawl Website
                 <ArrowRight size={12} />
@@ -198,7 +198,7 @@ export const KnowledgeBaseManager: React.FC = () => {
                 placeholder="Search active sources..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-brand-bg/50 border border-brand-border pl-8.5 pr-4 py-1.5 rounded-full text-[10px] focus:outline-none focus:border-brand-primary text-brand-text-primary placeholder-brand-text-secondary"
+                className="input-field w-full text-[10px] placeholder-brand-text-secondary !pl-8.5 !py-1.5 !rounded-full"
               />
             </div>
           </div>

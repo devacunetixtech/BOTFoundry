@@ -94,14 +94,14 @@ export const CreatorProfile: React.FC<CreatorProfileProps> = ({
       {/* Profile Header Hero */}
       <section className="glass-panel-subtle p-8 bg-brand-surface border border-brand-border rounded-3xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:border-brand-border/80 transition-all duration-300">
         <div className="flex gap-5 items-center">
-          <div className="w-16 h-16 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-black">
+          <div className="w-16 h-16 rounded-full bg-brand-primary flex items-center justify-center text-brand-bg text-xl font-black">
             {displayAvatar}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-bold tracking-tight text-brand-text-primary">{displayName}</h2>
               <span className="inline-flex items-center gap-1 bg-brand-primary/10 text-brand-primary border border-brand-primary/20 px-2.5 py-0.5 rounded-full text-[9px] uppercase font-bold tracking-wide">
-                <CheckCircle size={10} className="fill-current" />
+                <CheckCircle size={10} className="fill-current animate-pulse" />
                 {displayBadge}
               </span>
             </div>
@@ -129,7 +129,7 @@ export const CreatorProfile: React.FC<CreatorProfileProps> = ({
         <div className="bg-brand-surface border border-brand-border p-5 rounded-2xl">
           <span className="text-[9px] uppercase font-bold text-brand-text-secondary tracking-wider block">Total Earnings</span>
           <span className="text-xl font-extrabold text-brand-primary mt-2 block font-mono">
-            {totalRevenue.toFixed(2)} <span className="text-xs font-semibold text-brand-text-secondary">{isTestnet ? 'tBOT' : 'BOT'}</span>
+            {totalRevenue.toFixed(3)} <span className="text-xs font-semibold text-brand-text-secondary">{isTestnet ? 'tBOT' : 'BOT'}</span>
           </span>
         </div>
         <div className="bg-brand-surface border border-brand-border p-5 rounded-2xl">

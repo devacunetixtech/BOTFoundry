@@ -139,6 +139,29 @@ export const Chat: React.FC<ChatProps> = ({ agent, onBack }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const [pendingTxHash, setPendingTxHash] = useState<string>('');
+
+  useEffect(() => {
+    if (address) {
+      const key = `pending_tx_${address.toLowerCase()}_${agent.id}`;
+      setPendingTxHash(localStorage.getItem(key) || '');
+    } else {
+      setPendingTxHash('');
+    }
+  }, [address, agent.id]);
+
+  const updatePendingTxHash = (hash: string) => {
+    setPendingTxHash(hash);
+    if (address) {
+      const key = `pending_tx_${address.toLowerCase()}_${agent.id}`;
+      if (hash) {
+        localStorage.setItem(key, hash);
+      } else {
+        localStorage.removeItem(key);
+      }
+    }
+  };
+
   const handleCopyText = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
@@ -186,9 +209,15 @@ export const Chat: React.FC<ChatProps> = ({ agent, onBack }) => {
 
     try {
       if (isPaid) {
-        setStatusMessage('Waiting for wallet payment approval...');
-        txHash = await payForAgentOnChain(agent.id, agent.pricePerRequest);
-        setStatusMessage('Verifying payment on BOT Chain (L1)...');
+        if (pendingTxHash) {
+          txHash = pendingTxHash;
+          setStatusMessage('Re-verifying existing payment on BOT Chain...');
+        } else {
+          setStatusMessage('Waiting for wallet payment approval...');
+          txHash = await payForAgentOnChain(agent.id, agent.pricePerRequest);
+          updatePendingTxHash(txHash);
+          setStatusMessage('Verifying payment on BOT Chain (L1)...');
+        }
       } else {
         setStatusMessage('Contacting agent backend...');
       }
@@ -210,6 +239,7 @@ export const Chat: React.FC<ChatProps> = ({ agent, onBack }) => {
       const chatHistory: Message[] = data.history;
 
       setMessages(chatHistory);
+      updatePendingTxHash(''); // Successfully processed, clear pending transaction hash
 
     } catch (err: any) {
       console.error(err);
@@ -404,6 +434,25 @@ export const Chat: React.FC<ChatProps> = ({ agent, onBack }) => {
             <div ref={messagesEndRef} />
           </div>
 
+          {/* Pending Tx Banner */}
+          {pendingTxHash && (
+            <div className="mb-3 bg-amber-500/10 border border-amber-500/20 px-4 py-2.5 rounded-2xl flex justify-between items-center text-[10px] text-amber-500 font-semibold gap-3 animate-fadeIn">
+              <span className="truncate flex items-center gap-1.5 min-w-0">
+                <Shield size={12} className="text-amber-500 animate-pulse flex-shrink-0" />
+                <span className="truncate">
+                  Unused payment detected: <span className="font-mono bg-amber-500/5 px-1.5 py-0.5 rounded border border-amber-500/10 select-all">{pendingTxHash}</span>. Click query to retry using this payment.
+                </span>
+              </span>
+              <button
+                type="button"
+                onClick={() => updatePendingTxHash('')}
+                className="hover:underline text-[9px] font-extrabold uppercase text-brand-text-secondary cursor-pointer flex-shrink-0"
+              >
+                Discard
+              </button>
+            </div>
+          )}
+
           {/* Form Input bar */}
           <form 
             onSubmit={handleSend}
@@ -420,20 +469,27 @@ export const Chat: React.FC<ChatProps> = ({ agent, onBack }) => {
                 }
               }}
               rows={1}
-              className="flex-grow bg-brand-surface border border-brand-border px-4 py-2.5 rounded-2xl text-xs focus:outline-none focus:border-brand-primary placeholder-brand-text-secondary text-brand-text-primary shadow-sm resize-none max-h-32 min-h-[38px] overflow-y-auto leading-relaxed"
+              className="input-field flex-grow text-xs placeholder-brand-text-secondary !rounded-2xl resize-none max-h-32 min-h-[38px] overflow-y-auto leading-relaxed"
               disabled={loading}
             />
             
             <button 
               type="submit" 
               disabled={loading || !inputText.trim()}
-              className="flex items-center gap-1.5 bg-brand-text-primary text-brand-bg hover:bg-brand-text-primary/90 px-5 py-2.5 rounded-full text-xs font-bold select-none cursor-pointer transition-all disabled:opacity-50 shadow-sm h-[38px]"
+              className="btn-primary select-none cursor-pointer text-xs disabled:opacity-50 h-[38px]"
             >
               {agent.pricePerRequest !== '0' ? (
-                <>
-                  <CreditCard size={12} />
-                  Pay & Query
-                </>
+                pendingTxHash ? (
+                  <>
+                    <Send size={12} />
+                    Verify & Send
+                  </>
+                ) : (
+                  <>
+                    <CreditCard size={12} />
+                    Pay & Query
+                  </>
+                )
               ) : (
                 <>
                   <Send size={12} />

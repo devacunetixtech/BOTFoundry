@@ -58,7 +58,7 @@ export const Landing: React.FC<LandingProps> = ({ setCurrentTab, theme }) => {
 
         <motion.h1 
           variants={itemVariants} 
-          className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight max-w-4xl text-brand-text-primary leading-[1.08] mb-6"
+          className="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight font-display max-w-4xl text-brand-text-primary leading-[1.08] mb-6"
         >
           Build, Deploy & Monetize AI Agents <br/>
           <span className="text-brand-primary">Without Writing Code.</span>
@@ -66,7 +66,7 @@ export const Landing: React.FC<LandingProps> = ({ setCurrentTab, theme }) => {
 
         <motion.p 
           variants={itemVariants} 
-          className="text-sm sm:text-base md:text-lg text-brand-text-secondary max-w-2xl leading-relaxed mb-10"
+          className="text-sm sm:text-base md:text-lg text-brand-text-secondary max-w-2xl leading-relaxed mb-10 font-sans"
         >
           BOTFoundry is the premier no-code AI Agent platform for BOT Chain. Create intelligent agents, publish them to the global marketplace, accept BOT payments, and build an on-chain AI business in minutes.
         </motion.p>
@@ -74,7 +74,7 @@ export const Landing: React.FC<LandingProps> = ({ setCurrentTab, theme }) => {
         <motion.div variants={itemVariants} className="flex flex-wrap gap-3.5 justify-center">
           <button 
             onClick={handleStart}
-            className="flex items-center gap-1.5 bg-brand-text-primary hover:bg-brand-text-primary/90 text-brand-bg px-7 py-3 rounded-full text-xs font-bold select-none cursor-pointer transition-all shadow-sm"
+            className="btn-primary select-none cursor-pointer"
           >
             Launch Platform
             <ArrowRight size={14} />
@@ -84,7 +84,7 @@ export const Landing: React.FC<LandingProps> = ({ setCurrentTab, theme }) => {
             href={isTestnet ? "https://scan.bohr.life" : "https://scan.botchain.ai"}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 bg-brand-surface hover:bg-brand-elevated text-brand-text-primary border border-brand-border px-7 py-3 rounded-full text-xs font-bold select-none transition-all shadow-sm"
+            className="btn-secondary select-none cursor-pointer"
           >
             <Play size={13} className="text-brand-primary fill-brand-primary" />
             View Explorer
@@ -241,7 +241,7 @@ export const Landing: React.FC<LandingProps> = ({ setCurrentTab, theme }) => {
               </div>
               <button 
                 onClick={handleStart}
-                className="flex items-center gap-1.5 bg-brand-text-primary hover:bg-brand-text-primary/95 text-brand-bg px-5 py-2.5 rounded-full text-xs font-bold select-none cursor-pointer transition-all shadow-sm"
+                className="btn-primary select-none cursor-pointer"
               >
                 Browse Marketplace
                 <ChevronRight size={12} />

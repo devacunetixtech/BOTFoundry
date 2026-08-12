@@ -168,19 +168,19 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Network Status Badge */}
           {isConnected ? (
             isTestnet ? (
-              <div className="hidden md:flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 text-amber-500 border border-amber-500/20 rounded-full text-[10px] font-bold uppercase tracking-wider select-none">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-brand-bg/50 text-brand-text-primary border border-brand-border rounded-full text-[10px] font-bold uppercase tracking-wider select-none">
+                <span className="pulse-dot-testnet" />
                 Testnet
               </div>
             ) : (
-              <div className="hidden md:flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-full text-[10px] font-bold uppercase tracking-wider select-none">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-brand-bg/50 text-brand-text-primary border border-brand-border rounded-full text-[10px] font-bold uppercase tracking-wider select-none">
+                <span className="pulse-dot-mainnet" />
                 Mainnet
               </div>
             )
           ) : (
-            <div className="hidden md:flex items-center gap-1.5 px-3 py-1 bg-brand-elevated text-brand-text-secondary border border-brand-border rounded-full text-[10px] font-bold uppercase tracking-wider select-none">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-text-secondary/55" />
+            <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-brand-bg/50 text-brand-text-secondary border border-brand-border rounded-full text-[10px] font-bold uppercase tracking-wider select-none">
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-text-secondary/40" />
               Offline
             </div>
           )}
@@ -198,7 +198,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {isWrongNetwork && (
             <button
               onClick={() => switchNetwork('testnet')}
-              className="flex items-center gap-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 px-3 py-1.5 rounded-full text-xs font-semibold"
+              className="flex items-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 px-3 py-1.5 rounded-full text-xs font-semibold"
             >
               <AlertTriangle size={12} />
               <span className="hidden sm:inline">Wrong Network</span>
@@ -295,7 +295,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={connectWallet}
               disabled={isConnecting}
-              className="flex items-center gap-1.5 bg-brand-text-primary hover:bg-brand-text-primary/90 text-brand-bg border-0 px-4 py-1.5 rounded-full text-xs font-semibold select-none cursor-pointer transition-all shadow-sm"
+              className="btn-primary !px-4 !py-1.5 text-xs select-none cursor-pointer"
             >
               <Wallet size={12} />
               {isConnecting ? 'Connecting...' : 'Connect'}

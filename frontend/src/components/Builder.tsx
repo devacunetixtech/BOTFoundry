@@ -199,7 +199,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
                 placeholder="e.g. Smart Solidity Auditor" 
                 value={name} 
                 onChange={(e) => setName(e.target.value)} 
-                className="w-full bg-brand-bg/50 border border-brand-border px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-brand-primary text-brand-text-primary placeholder-brand-text-secondary"
+                className="input-field w-full text-xs placeholder-brand-text-secondary !rounded-xl"
                 maxLength={40}
               />
             </div>
@@ -213,7 +213,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
                 placeholder="Describe what this AI agent does, its specialties, and how it helps users..." 
                 value={description} 
                 onChange={(e) => setDescription(e.target.value)} 
-                className="w-full bg-brand-bg/50 border border-brand-border px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-brand-primary text-brand-text-primary placeholder-brand-text-secondary min-h-[90px] resize-none"
+                className="input-field w-full text-xs placeholder-brand-text-secondary min-h-[90px] resize-none !rounded-xl"
                 maxLength={200}
               />
             </div>
@@ -224,7 +224,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
                 <select 
                   value={category} 
                   onChange={(e) => setCategory(e.target.value)} 
-                  className="w-full bg-brand-bg border border-brand-border px-3.5 py-2.5 rounded-xl text-xs focus:outline-none focus:border-brand-primary text-brand-text-primary"
+                  className="input-field w-full text-xs !rounded-xl"
                 >
                   {CATEGORIES.map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -241,7 +241,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
                   <select 
                     value={avatar} 
                     onChange={(e) => setAvatar(e.target.value)} 
-                    className="w-full bg-brand-bg border border-brand-border px-3 py-2.5 rounded-xl text-xs focus:outline-none focus:border-brand-primary text-brand-text-primary"
+                    className="input-field w-full text-xs !rounded-xl"
                   >
                     {EMOJIS.map(emo => (
                       <option key={emo} value={emo}>{emo}</option>
@@ -254,7 +254,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
             <div className="flex justify-end pt-4 border-t border-brand-border/60">
               <button 
                 onClick={handleNext} 
-                className="flex items-center gap-1.5 bg-brand-text-primary text-brand-bg hover:bg-brand-text-primary/90 px-5 py-2.5 rounded-full text-xs font-bold select-none cursor-pointer transition-all shadow-sm"
+                className="btn-primary select-none cursor-pointer text-xs"
               >
                 Next Step
                 <ArrowRight size={13} />
@@ -285,7 +285,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
                 placeholder="e.g. You are a senior smart contract auditor. Your task is to analyze Solidity contract code provided by the user. Look for common security flaws like Reentrancy, Integer Overflow/Underflow, and incorrect access control. Always respond in markdown with clear headings, explanation of the bugs, and the corrected Solidity code snippets." 
                 value={systemPrompt} 
                 onChange={(e) => setSystemPrompt(e.target.value)} 
-                className="w-full bg-brand-bg/50 border border-brand-border px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-brand-primary text-brand-text-primary placeholder-brand-text-secondary min-h-[180px]"
+                className="input-field w-full text-xs placeholder-brand-text-secondary min-h-[180px] !rounded-xl"
               />
             </div>
 
@@ -296,14 +296,14 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
             <div className="flex justify-between pt-4 border-t border-brand-border/60">
               <button 
                 onClick={handleBack} 
-                className="flex items-center gap-1.5 bg-brand-surface hover:bg-brand-elevated text-brand-text-primary border border-brand-border px-4.5 py-2.5 rounded-full text-xs font-semibold select-none cursor-pointer transition-all"
+                className="btn-secondary select-none cursor-pointer text-xs"
               >
                 <ArrowLeft size={13} />
                 Back
               </button>
               <button 
                 onClick={handleNext} 
-                className="flex items-center gap-1.5 bg-brand-text-primary text-brand-bg hover:bg-brand-text-primary/90 px-5 py-2.5 rounded-full text-xs font-bold select-none cursor-pointer transition-all shadow-sm"
+                className="btn-primary select-none cursor-pointer text-xs"
               >
                 Next Step
                 <ArrowRight size={13} />
@@ -337,7 +337,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
                   min="0"
                   value={price} 
                   onChange={(e) => setPrice(e.target.value)} 
-                  className="bg-brand-bg/50 border border-brand-border px-4 py-2.5 rounded-xl text-base font-bold focus:outline-none focus:border-brand-primary text-brand-text-primary w-full max-w-[200px]"
+                  className="input-field w-full text-base font-bold w-full max-w-[200px] !rounded-xl"
                 />
                 <span className="font-bold text-sm text-brand-text-primary">{isTestnet ? 'tBOT' : 'BOT'}</span>
               </div>
@@ -347,33 +347,33 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
             <div className="bg-brand-bg/50 border border-brand-border p-5 rounded-2xl space-y-3.5 text-xs">
               <div className="flex justify-between">
                 <span className="text-brand-text-secondary">Total cost to user:</span>
-                <span className="font-bold text-brand-text-primary">{numPrice.toFixed(4)} {isTestnet ? 'tBOT' : 'BOT'}</span>
+                <span className="font-bold text-brand-text-primary">{numPrice.toFixed(3)} {isTestnet ? 'tBOT' : 'BOT'}</span>
               </div>
               
               <div className="flex justify-between text-brand-text-secondary">
                 <span>Platform fee (5%):</span>
-                <span>- {platformFee.toFixed(4)} {isTestnet ? 'tBOT' : 'BOT'}</span>
+                <span>- {platformFee.toFixed(3)} {isTestnet ? 'tBOT' : 'BOT'}</span>
               </div>
               
               <div className="border-t border-brand-border" />
 
               <div className="flex justify-between font-bold text-sm">
                 <span className="text-brand-text-primary">Your earnings (95%):</span>
-                <span className="text-brand-primary">+ {creatorShare.toFixed(4)} {isTestnet ? 'tBOT' : 'BOT'}</span>
+                <span className="text-brand-primary font-bold">+ {creatorShare.toFixed(3)} {isTestnet ? 'tBOT' : 'BOT'}</span>
               </div>
             </div>
 
             <div className="flex justify-between pt-4 border-t border-brand-border/60">
               <button 
                 onClick={handleBack} 
-                className="flex items-center gap-1.5 bg-brand-surface hover:bg-brand-elevated text-brand-text-primary border border-brand-border px-4.5 py-2.5 rounded-full text-xs font-semibold select-none cursor-pointer transition-all"
+                className="btn-secondary select-none cursor-pointer text-xs"
               >
                 <ArrowLeft size={13} />
                 Back
               </button>
               <button 
                 onClick={handleNext} 
-                className="flex items-center gap-1.5 bg-brand-text-primary text-brand-bg hover:bg-brand-text-primary/90 px-5 py-2.5 rounded-full text-xs font-bold select-none cursor-pointer transition-all shadow-sm"
+                className="btn-primary select-none cursor-pointer text-xs"
               >
                 Next Step
                 <ArrowRight size={13} />
@@ -440,7 +440,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
               <button 
                 onClick={handleBack} 
                 disabled={loading} 
-                className="flex items-center gap-1.5 bg-brand-surface hover:bg-brand-elevated text-brand-text-primary border border-brand-border px-4.5 py-2.5 rounded-full text-xs font-semibold select-none cursor-pointer transition-all"
+                className="btn-secondary select-none cursor-pointer text-xs"
               >
                 <ArrowLeft size={13} />
                 Back
@@ -448,7 +448,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
               <button 
                 onClick={handleDeploy} 
                 disabled={loading}
-                className="flex items-center gap-1.5 bg-brand-primary hover:bg-brand-primary/90 text-white px-6 py-2.5 rounded-full text-xs font-bold select-none cursor-pointer transition-all shadow-sm"
+                className="btn-primary select-none cursor-pointer text-xs"
               >
                 <Send size={12} />
                 {loading ? 'Confirming Tx...' : 'Deploy & Publish'}
@@ -502,7 +502,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
             <div className="flex gap-3 pt-2">
               <button 
                 onClick={() => setCurrentTab('marketplace')} 
-                className="bg-brand-text-primary text-brand-bg hover:bg-brand-text-primary/90 px-6 py-2.5 rounded-full text-xs font-bold select-none cursor-pointer transition-all shadow-sm"
+                className="btn-primary select-none cursor-pointer text-xs"
               >
                 View in Marketplace
               </button>
@@ -514,7 +514,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
                   setPrice('0.1');
                   setStep(1);
                 }}
-                className="bg-brand-surface hover:bg-brand-elevated text-brand-text-primary border border-brand-border px-6 py-2.5 rounded-full text-xs font-bold select-none cursor-pointer transition-all"
+                className="btn-secondary select-none cursor-pointer text-xs"
               >
                 Build Another
               </button>

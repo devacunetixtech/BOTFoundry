@@ -125,7 +125,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ onRunAgent }) => {
         </div>
         <button 
           onClick={fetchAgents} 
-          className="inline-flex items-center gap-2 bg-brand-surface hover:bg-brand-elevated text-brand-text-primary border border-brand-border px-4 py-2.5 rounded-full text-xs font-semibold select-none cursor-pointer transition-all"
+          className="btn-secondary select-none cursor-pointer text-xs flex items-center gap-2"
         >
           <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
           Refresh registry
@@ -142,7 +142,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ onRunAgent }) => {
           placeholder="Search agents by name, category, instructions, or creator address..." 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-brand-surface border border-brand-border pl-11 pr-4 py-3 rounded-full text-xs focus:outline-none focus:border-brand-primary placeholder-brand-text-secondary text-brand-text-primary shadow-sm"
+          className="input-field w-full text-xs placeholder-brand-text-secondary !pl-11 !py-3 !rounded-full"
         />
       </div>
 
@@ -154,7 +154,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ onRunAgent }) => {
             onClick={() => setSelectedCategory(cat)}
             className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all select-none cursor-pointer border ${
               selectedCategory === cat
-                ? 'bg-brand-primary text-white border-brand-primary'
+                ? 'bg-brand-primary text-brand-bg border-brand-primary font-bold shadow-sm'
                 : 'bg-brand-surface text-brand-text-secondary border-brand-border hover:text-brand-text-primary hover:border-brand-text-secondary/50'
             }`}
           >
@@ -255,7 +255,7 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ onRunAgent }) => {
                   {/* Main Call to Action Button */}
                   <button 
                     onClick={() => handleRunClick(agent)}
-                    className="w-full flex items-center justify-center gap-1.5 bg-brand-text-primary text-brand-bg hover:bg-brand-text-primary/90 px-4 py-2.5 rounded-full text-xs font-bold select-none cursor-pointer transition-all shadow-sm"
+                    className="btn-primary w-full text-xs py-2.5 px-4 select-none cursor-pointer"
                   >
                     <Play size={10} className="fill-current" />
                     Interact with Agent

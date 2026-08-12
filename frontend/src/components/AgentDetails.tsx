@@ -218,14 +218,14 @@ axios.post('${apiEndpointUrl}', {
           <div className="text-right">
             <span className="text-[9px] uppercase font-bold tracking-wider text-brand-text-secondary block">Total Revenue Generated</span>
             <span className="text-xl font-extrabold text-brand-primary tracking-tight font-mono">
-              {Number(ethers.formatEther(agent.revenueGenerated)).toFixed(2)} <span className="text-xs">{isTestnet ? 'tBOT' : 'BOT'}</span>
+              {Number(ethers.formatEther(agent.revenueGenerated)).toFixed(3)} <span className="text-xs">{isTestnet ? 'tBOT' : 'BOT'}</span>
             </span>
           </div>
 
           <div className="flex gap-2">
             <button 
               onClick={() => onRunAgent(agent)}
-              className="inline-flex items-center gap-1.5 bg-brand-text-primary hover:bg-brand-text-primary/95 text-brand-bg px-4.5 py-2.5 rounded-full text-xs font-bold select-none cursor-pointer transition-all shadow-sm"
+              className="btn-primary select-none cursor-pointer text-xs"
             >
               <Play size={11} className="fill-current" />
               Interact with Agent
@@ -342,7 +342,7 @@ axios.post('${apiEndpointUrl}', {
                 value={name} 
                 onChange={(e) => setName(e.target.value)} 
                 disabled={!address || address.toLowerCase() !== agent.creator.toLowerCase() || updating}
-                className="w-full bg-brand-bg/50 border border-brand-border px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-brand-primary text-brand-text-primary disabled:opacity-60"
+                className="input-field w-full text-xs disabled:opacity-60 !rounded-xl"
               />
             </div>
 
@@ -352,7 +352,7 @@ axios.post('${apiEndpointUrl}', {
                 value={desc} 
                 onChange={(e) => setDesc(e.target.value)} 
                 disabled={!address || address.toLowerCase() !== agent.creator.toLowerCase() || updating}
-                className="w-full bg-brand-bg/50 border border-brand-border px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-brand-primary text-brand-text-primary min-h-[70px] resize-none disabled:opacity-60"
+                className="input-field w-full text-xs min-h-[70px] resize-none disabled:opacity-60 !rounded-xl"
                 maxLength={200}
               />
             </div>
@@ -363,7 +363,7 @@ axios.post('${apiEndpointUrl}', {
                 value={prompt} 
                 onChange={(e) => setPrompt(e.target.value)} 
                 disabled={!address || address.toLowerCase() !== agent.creator.toLowerCase() || updating}
-                className="w-full bg-brand-bg/50 border border-brand-border px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-brand-primary text-brand-text-primary min-h-[140px] disabled:opacity-60"
+                className="input-field w-full text-xs min-h-[140px] disabled:opacity-60 !rounded-xl"
               />
             </div>
 
@@ -371,7 +371,7 @@ axios.post('${apiEndpointUrl}', {
               <button 
                 onClick={() => handleUpdate(price, name, prompt, desc)}
                 disabled={updating}
-                className="bg-brand-text-primary text-brand-bg hover:bg-brand-text-primary/90 px-6 py-2.5 rounded-full text-xs font-bold cursor-pointer transition-all shadow-sm disabled:opacity-50"
+                className="btn-primary select-none cursor-pointer text-xs disabled:opacity-50"
               >
                 {updating ? 'Saving...' : 'Save Configuration'}
               </button>
@@ -411,7 +411,7 @@ axios.post('${apiEndpointUrl}', {
               <h3 className="text-sm font-semibold text-brand-text-primary">Connected Vector Knowledge</h3>
               <button 
                 onClick={() => alert('Adding new knowledge source index...')}
-                className="bg-brand-bg hover:bg-brand-elevated border border-brand-border px-3.5 py-1.5 rounded-full text-[10px] font-semibold transition-colors cursor-pointer"
+                className="btn-secondary select-none cursor-pointer text-[10px] !px-3.5 !py-1.5"
               >
                 Connect Index
               </button>
@@ -454,7 +454,7 @@ axios.post('${apiEndpointUrl}', {
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   disabled={!address || address.toLowerCase() !== agent.creator.toLowerCase() || updating}
-                  className="bg-brand-bg/50 border border-brand-border px-4 py-2.5 rounded-xl text-base font-bold focus:outline-none focus:border-brand-primary text-brand-text-primary w-full max-w-[200px] disabled:opacity-60"
+                  className="input-field w-full text-base font-bold w-full max-w-[200px] disabled:opacity-60 !rounded-xl"
                 />
                 <span className="font-bold text-xs text-brand-text-primary">{isTestnet ? 'tBOT' : 'BOT'}</span>
               </div>
@@ -464,7 +464,7 @@ axios.post('${apiEndpointUrl}', {
               <button 
                 onClick={() => handleUpdate(price, name, prompt, desc)}
                 disabled={updating}
-                className="bg-brand-text-primary text-brand-bg hover:bg-brand-text-primary/90 px-6 py-2.5 rounded-full text-xs font-bold cursor-pointer transition-all shadow-sm disabled:opacity-50"
+                className="btn-primary select-none cursor-pointer text-xs disabled:opacity-50"
               >
                 {updating ? 'Updating...' : 'Update Pricing'}
               </button>

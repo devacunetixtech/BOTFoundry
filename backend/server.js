@@ -654,6 +654,157 @@ app.get('/api/sandbox/faucets', async (req, res) => {
   }
 });
 
+// In-memory stores for Captchas and Faucet rate-limiting
+const captchas = new Map(); // challengeId => { answer, expires }
+const faucetClaims = new Map(); // key (IP or address) => timestamp
+
+// Clean up expired captchas periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, challenge] of captchas.entries()) {
+    if (now > challenge.expires) {
+      captchas.delete(id);
+    }
+  }
+}, 60000);
+
+// Initialize Faucet Wallet
+let faucetWallet = null;
+const FAUCET_KEY = process.env.FAUCET_PRIVATE_KEY;
+const testnetProvider = new ethers.JsonRpcProvider(TESTNET_RPC, undefined, {
+  staticNetwork: new ethers.Network('BOT Chain Testnet', 968)
+});
+
+if (FAUCET_KEY) {
+  try {
+    faucetWallet = new ethers.Wallet(FAUCET_KEY, testnetProvider);
+    console.log(`Faucet Relayer Wallet initialized. Address: ${faucetWallet.address}`);
+  } catch (err) {
+    console.error('Error initializing Faucet Wallet from private key:', err);
+  }
+} else {
+  // Generate a random wallet to avoid crash, and print instructions to console
+  const randomWallet = ethers.Wallet.createRandom();
+  faucetWallet = new ethers.Wallet(randomWallet.privateKey, testnetProvider);
+  console.log(`\n==================================================`);
+  console.log(`⚠️ FAUCET_PRIVATE_KEY not set in backend/.env.`);
+  console.log(`A temporary faucet wallet has been generated:`);
+  console.log(`Address: ${faucetWallet.address}`);
+  console.log(`To use the relayer, please fund this address with tBOT on Testnet`);
+  console.log(`or configure FAUCET_PRIVATE_KEY inside backend/.env.`);
+  console.log(`==================================================\n`);
+}
+
+// GET /api/faucet/captcha
+app.get('/api/faucet/captcha', (req, res) => {
+  try {
+    const num1 = Math.floor(Math.random() * 9) + 1; // 1-9
+    const num2 = Math.floor(Math.random() * 9) + 1; // 1-9
+    const operators = ['+', '-'];
+    const op = operators[Math.floor(Math.random() * operators.length)];
+    
+    let question = '';
+    let answer = 0;
+    
+    if (op === '+') {
+      question = `What is ${num1} + ${num2}?`;
+      answer = num1 + num2;
+    } else {
+      // Ensure positive result for simplicity
+      const max = Math.max(num1, num2);
+      const min = Math.min(num1, num2);
+      question = `What is ${max} - ${min}?`;
+      answer = max - min;
+    }
+    
+    const challengeId = Math.random().toString(36).substring(2, 15);
+    const expires = Date.now() + 5 * 60 * 1000; // 5 minutes validity
+    
+    captchas.set(challengeId, { answer, expires });
+    
+    res.json({ success: true, challengeId, question });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/faucet/claim
+app.post('/api/faucet/claim', async (req, res) => {
+  try {
+    const { address, challengeId, answer } = req.body;
+    
+    if (!address || !challengeId || answer === undefined) {
+      return res.status(400).json({ error: 'Missing required parameters: address, challengeId, and answer are required.' });
+    }
+    
+    // 1. Verify Captcha
+    const challenge = captchas.get(challengeId);
+    if (!challenge) {
+      return res.status(400).json({ error: 'Captcha challenge expired or invalid. Please request a new one.' });
+    }
+    
+    if (Date.now() > challenge.expires) {
+      captchas.delete(challengeId);
+      return res.status(400).json({ error: 'Captcha challenge has expired. Please request a new one.' });
+    }
+    
+    if (parseInt(answer) !== challenge.answer) {
+      return res.status(400).json({ error: 'Incorrect captcha answer. Please try again.' });
+    }
+    
+    // Clean up used captcha challenge
+    captchas.delete(challengeId);
+    
+    // 2. Verify IP and Address Rate-Limits (Sybil prevention)
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const cleanAddress = address.toLowerCase();
+    const now = Date.now();
+    const rateLimitPeriod = 24 * 60 * 60 * 1000; // 24 hours
+    
+    const ipLastClaim = faucetClaims.get(`ip_${ip}`);
+    if (ipLastClaim && now - ipLastClaim < rateLimitPeriod) {
+      const remainingHours = Math.ceil((rateLimitPeriod - (now - ipLastClaim)) / (60 * 60 * 1000));
+      return res.status(429).json({ error: `This IP has already claimed tokens recently. Please retry in ${remainingHours} hours.` });
+    }
+    
+    const addrLastClaim = faucetClaims.get(`addr_${cleanAddress}`);
+    if (addrLastClaim && now - addrLastClaim < rateLimitPeriod) {
+      const remainingHours = Math.ceil((rateLimitPeriod - (now - addrLastClaim)) / (60 * 60 * 1000));
+      return res.status(429).json({ error: `This wallet address has already claimed tokens recently. Please retry in ${remainingHours} hours.` });
+    }
+    
+    // 3. Send Transaction
+    if (!faucetWallet) {
+      return res.status(500).json({ error: 'Faucet relayer wallet is not initialized.' });
+    }
+    
+    console.log(`Relaying claim transaction to transfer 0.1 tBOT to address ${address}`);
+    
+    // Send 0.1 tBOT
+    const tx = await faucetWallet.sendTransaction({
+      to: address,
+      value: ethers.parseEther('0.1')
+    });
+    
+    // Save claim timestamps immediately to prevent double clicks from bypassing rate limits
+    faucetClaims.set(`ip_${ip}`, now);
+    faucetClaims.set(`addr_${cleanAddress}`, now);
+    
+    // Wait for the tx confirmation
+    const receipt = await tx.wait();
+    
+    res.json({
+      success: true,
+      amount: '0.1 tBOT',
+      txHash: receipt.hash
+    });
+    
+  } catch (err) {
+    console.error('Faucet relayer claim error:', err);
+    res.status(500).json({ error: err.reason || err.message || err });
+  }
+});
+
 // Start Express Server
 app.listen(PORT, () => {
   console.log(`BOTFoundry backend listening on http://localhost:${PORT}`);

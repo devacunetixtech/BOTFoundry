@@ -123,7 +123,7 @@ export const PublishMonetization: React.FC<PublishMonetizationProps> = ({
                 type="text" 
                 value={agentName}
                 onChange={(e) => setAgentName(e.target.value)}
-                className="w-full bg-brand-bg/50 border border-brand-border px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-brand-primary text-brand-text-primary"
+                className="input-field w-full text-xs !rounded-xl"
               />
             </div>
           </motion.div>
@@ -165,7 +165,7 @@ export const PublishMonetization: React.FC<PublishMonetizationProps> = ({
                     step="0.01"
                     value={priceRate}
                     onChange={(e) => setPriceRate(e.target.value)}
-                    className="w-full max-w-[200px] bg-brand-bg/50 border border-brand-border px-4 py-2.5 rounded-xl text-base font-bold focus:outline-none focus:border-brand-primary text-brand-text-primary"
+                    className="input-field w-full max-w-[200px] text-base font-bold !rounded-xl"
                   />
                 </div>
 
@@ -183,14 +183,14 @@ export const PublishMonetization: React.FC<PublishMonetizationProps> = ({
                         type="number" 
                         value={dailyQueriesSim} 
                         onChange={(e) => setDailyQueriesSim(e.target.value)}
-                        className="w-full bg-brand-surface border border-brand-border px-3 py-1.5 rounded-lg text-xs" 
+                        className="input-field w-full text-xs !rounded-lg !py-1.5 !px-3" 
                       />
                     </div>
 
                     <div className="text-right">
                       <span className="text-[9px] uppercase text-brand-text-secondary block">Est. Daily Earnings (95%)</span>
                       <span className="text-lg font-bold text-brand-primary mt-1 block font-mono">
-                        +{estDailyEarnings.toFixed(2)} {isTestnet ? 'tBOT' : 'BOT'}
+                        +{estDailyEarnings.toFixed(3)} {isTestnet ? 'tBOT' : 'BOT'}
                       </span>
                     </div>
                   </div>
@@ -240,7 +240,7 @@ export const PublishMonetization: React.FC<PublishMonetizationProps> = ({
                 type="text" 
                 value={metadataURI}
                 onChange={(e) => setMetadataURI(e.target.value)}
-                className="w-full bg-brand-bg/50 border border-brand-border px-4 py-2.5 rounded-xl text-xs focus:outline-none focus:border-brand-primary text-brand-text-primary font-mono"
+                className="input-field w-full text-xs font-mono !rounded-xl"
               />
             </div>
             
@@ -279,7 +279,7 @@ export const PublishMonetization: React.FC<PublishMonetizationProps> = ({
             <button 
               onClick={handlePublish}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-1.5 bg-brand-primary hover:bg-brand-primary/95 text-white py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm"
+              className="btn-primary w-full text-xs select-none cursor-pointer flex items-center justify-center gap-1.5 disabled:opacity-50"
             >
               <Send size={11} />
               {loading ? 'Submitting registry transaction...' : 'Deploy to Blockchain'}
@@ -304,7 +304,7 @@ export const PublishMonetization: React.FC<PublishMonetizationProps> = ({
             {onPublishComplete && (
               <button 
                 onClick={onPublishComplete}
-                className="bg-brand-text-primary text-brand-bg hover:bg-brand-text-primary/90 px-6 py-2.5 rounded-full text-xs font-bold cursor-pointer transition-all"
+                className="btn-primary select-none cursor-pointer text-xs !px-6 !py-2.5"
               >
                 Go to Marketplace
               </button>
@@ -320,14 +320,14 @@ export const PublishMonetization: React.FC<PublishMonetizationProps> = ({
           <button 
             onClick={handleBack}
             disabled={step === 1}
-            className="flex items-center gap-1 bg-brand-surface hover:bg-brand-elevated text-brand-text-primary border border-brand-border px-4 py-2 rounded-full text-xs font-semibold transition-all disabled:opacity-40 cursor-pointer select-none"
+            className="btn-secondary select-none cursor-pointer text-xs flex items-center gap-1 disabled:opacity-40"
           >
             <ArrowLeft size={12} /> Back
           </button>
           
           <button 
             onClick={handleNext}
-            className="flex items-center gap-1 bg-brand-text-primary text-brand-bg hover:bg-brand-text-primary/95 px-5 py-2 rounded-full text-xs font-bold transition-all cursor-pointer select-none shadow-sm"
+            className="btn-primary select-none cursor-pointer text-xs flex items-center gap-1"
           >
             Next <ArrowRight size={12} />
           </button>

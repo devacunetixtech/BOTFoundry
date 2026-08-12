@@ -80,9 +80,9 @@ export const CreatorAnalytics: React.FC = () => {
 
   const formatEtherVal = (wei: string) => {
     try {
-      return Number(ethers.formatEther(wei)).toFixed(2);
+      return Number(ethers.formatEther(wei)).toFixed(3);
     } catch (e) {
-      return '0.00';
+      return '0.000';
     }
   };
 
@@ -144,7 +144,7 @@ export const CreatorAnalytics: React.FC = () => {
         </div>
         <button 
           onClick={fetchAnalytics}
-          className="inline-flex items-center gap-1.5 bg-brand-surface hover:bg-brand-elevated text-brand-text-primary border border-brand-border px-4 py-2.5 rounded-full text-xs font-semibold select-none cursor-pointer transition-all"
+          className="btn-secondary select-none cursor-pointer text-xs"
         >
           <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
           Refresh telemetry
@@ -182,7 +182,7 @@ export const CreatorAnalytics: React.FC = () => {
         <button
           onClick={handleWithdraw}
           disabled={withdrawing || claimable === '0'}
-          className="inline-flex items-center justify-center gap-1.5 bg-brand-primary hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-full text-xs font-semibold select-none cursor-pointer transition-all shrink-0"
+          className="btn-primary select-none cursor-pointer text-xs disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
         >
           {withdrawing ? (
             <>

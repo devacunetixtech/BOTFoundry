@@ -146,9 +146,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab, onEditAgent
 
   const formatEtherVal = (wei: string) => {
     try {
-      return Number(ethers.formatEther(wei)).toFixed(2);
+      return Number(ethers.formatEther(wei)).toFixed(3);
     } catch (e) {
-      return '0.00';
+      return '0.000';
     }
   };
 
@@ -172,7 +172,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab, onEditAgent
         <div className="mt-6">
           <button 
             onClick={() => window.ethereum ? useWallet().connectWallet() : alert('EVM wallet not detected.')}
-            className="bg-brand-text-primary hover:bg-brand-text-primary/90 text-brand-bg px-6 py-2.5 rounded-full text-xs font-semibold select-none cursor-pointer transition-all"
+            className="btn-primary select-none cursor-pointer text-xs"
           >
             Connect Wallet
           </button>
@@ -205,14 +205,14 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab, onEditAgent
         <div className="flex gap-2.5">
           <button 
             onClick={() => fetchAnalytics()}
-            className="inline-flex items-center gap-1.5 bg-brand-surface hover:bg-brand-elevated text-brand-text-primary border border-brand-border px-4 py-2.5 rounded-full text-xs font-semibold select-none cursor-pointer transition-all"
+            className="btn-secondary select-none cursor-pointer text-xs"
           >
             <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
             Refresh telemetry
           </button>
           <button 
             onClick={() => setCurrentTab('builder')}
-            className="inline-flex items-center gap-1.5 bg-brand-text-primary text-brand-bg hover:bg-brand-text-primary/95 px-4.5 py-2.5 rounded-full text-xs font-bold select-none cursor-pointer transition-all shadow-sm"
+            className="btn-primary select-none cursor-pointer text-xs"
           >
             <Plus size={13} />
             Build Agent
@@ -236,7 +236,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab, onEditAgent
           </div>
           <div className="mt-4">
             <div className="text-2xl font-bold text-brand-text-primary">
-              <AnimatedCounter value={parseFloat(balance) || 0} decimals={2} />
+              <AnimatedCounter value={parseFloat(balance) || 0} decimals={3} />
               <span className="text-xs text-brand-text-secondary font-medium ml-1.5">{isTestnet ? 'tBOT' : 'BOT'}</span>
             </div>
             <span className="text-[10px] text-brand-text-secondary block mt-1.5 font-medium">BOT Chain {isTestnet ? 'Testnet' : 'Mainnet'} EVM Address</span>
@@ -251,7 +251,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab, onEditAgent
           </div>
           <div className="mt-4">
             <div className="text-2xl font-bold text-brand-primary">
-              <AnimatedCounter value={earningsValue} decimals={2} />
+              <AnimatedCounter value={earningsValue} decimals={3} />
               <span className="text-xs text-brand-text-secondary font-medium ml-1.5">{isTestnet ? 'tBOT' : 'BOT'}</span>
             </div>
             <span className="text-[10px] text-brand-text-secondary block mt-1.5 font-medium">95% Creator share settled ({isTestnet ? 'Testnet' : 'Mainnet'})</span>
@@ -349,7 +349,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab, onEditAgent
               <p>You have not registered any AI agents yet. Get started by deploying your first model identity.</p>
               <button 
                 onClick={() => setCurrentTab('builder')}
-                className="bg-brand-bg hover:bg-brand-elevated border border-brand-border px-4 py-2 rounded-full font-semibold transition-colors"
+                className="btn-secondary select-none cursor-pointer text-xs"
               >
                 Build Agent
               </button>
@@ -413,7 +413,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab, onEditAgent
                             };
                             onEditAgent(fullAgent);
                           }}
-                          className="bg-brand-surface hover:bg-brand-elevated text-brand-text-primary border border-brand-border px-3.5 py-1.5 rounded-full text-[10px] font-semibold select-none cursor-pointer transition-colors shadow-sm"
+                          className="btn-secondary select-none cursor-pointer text-[10px] !px-3.5 !py-1.5"
                         >
                           Configure
                         </button>
@@ -478,7 +478,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab, onEditAgent
               href={isTestnet ? "https://scan.bohr.life" : "https://scan.botchain.ai"} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-1 bg-brand-bg hover:bg-brand-elevated text-brand-text-primary border border-brand-border px-4 py-2.5 rounded-full text-xs font-semibold transition-colors"
+              className="btn-secondary w-full text-xs select-none cursor-pointer flex items-center justify-center gap-1"
             >
               <span>Verify on Block Explorer</span>
               <ArrowRight size={11} className="text-brand-text-secondary" />
