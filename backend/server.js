@@ -517,13 +517,36 @@ app.post('/api/sandbox/generate', async (req, res) => {
 
     const model = genAI.getGenerativeModel({
       model: 'gemini-3.6-flash',
-      systemInstruction: `You are a Solidity Smart Contract Generator. Your only job is to write valid, deployable Solidity smart contracts for the BOT Chain (EVM chain).
-You must output ONLY valid Solidity source code. 
-CRITICAL: Do NOT wrap the code in markdown code blocks like \`\`\`solidity or \`\`\`. Start directly with "// SPDX-License-Identifier: MIT" and "pragma solidity". 
-Do NOT include any introduction, explanations, notes, or chat text. Output only raw code. Ensure compilation safety (e.g., standard libraries, correct licenses, no compile errors).`
+      systemInstruction: `You are a custom Solidity Smart Contract Generator for the BOT Chain EVM-compatible blockchain.
+Write original, functional Solidity contracts from scratch based on the user's description.
+Do not copy or reproduce any existing named contract libraries verbatim. Write original implementations that achieve the described functionality.
+CRITICAL: Output ONLY raw Solidity code — start directly with "// SPDX-License-Identifier: MIT" and "pragma solidity".
+Do NOT use markdown code fences (\`\`\`solidity or \`\`\`). Do NOT include explanations, comments outside the code, or any plain text.
+Use safe arithmetic, correct visibility modifiers, and ensure the contract compiles on Solidity ^0.8.20.`,
+      safetySettings: [
+        { category: 'HARM_CATEGORY_HARASSMENT',        threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+      ]
     });
 
-    const result = await model.generateContent(prompt);
+    let result;
+    try {
+      result = await model.generateContent(
+        `Write an original Solidity smart contract for BOT Chain that does the following: ${prompt}. Do not copy named open-source contracts. Write a completely original implementation.`
+      );
+    } catch (genError) {
+      // Handle RECITATION or other generation-level blocks gracefully
+      const msg = genError?.message || '';
+      if (msg.includes('RECITATION') || msg.includes('blocked') || msg.includes('filtered')) {
+        return res.status(422).json({
+          error: 'The AI could not generate this contract because the prompt closely resembles known copyrighted code patterns. Try rephrasing with more specific original requirements (e.g., "a contract that tracks user scores with a mapping" instead of naming a known standard).'
+        });
+      }
+      throw genError;
+    }
+
     let code = result.response.text().trim();
 
     // In case the AI still wraps it in markdown block quotes
@@ -537,6 +560,7 @@ Do NOT include any introduction, explanations, notes, or chat text. Output only 
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // 11. Sandbox Solidity compilation
 app.post('/api/sandbox/compile', (req, res) => {
