@@ -6,6 +6,9 @@ BOTFoundry Build prompt.md
 BOT Chain Network Integration Guide.md
 BOTFoundry PRD.md
 botfoundry_pitch_guide.md
+backend.txt
+frontend.txt
+backend/withdraw_faucet.js
 
 # Local database files
 backend/db.json
