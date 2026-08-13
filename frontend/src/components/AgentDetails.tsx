@@ -57,14 +57,21 @@ export const AgentDetails: React.FC<AgentDetailsProps> = ({ agent, onBack, onRun
   const [price, setPrice] = useState(ethers.formatEther(agent.pricePerRequest));
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+  const triggerNotification = (type: 'success' | 'error' | 'info', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => {
+      setNotification((prev) => prev?.message === message ? null : prev);
+    }, 5000);
+  };
 
   const handleUpdate = async (updatedPrice?: string, updatedName?: string, updatedPrompt?: string, updatedDesc?: string) => {
     if (!address) {
-      alert('Please connect your EVM wallet first.');
+      triggerNotification('error', 'Please connect your EVM wallet first.');
       return;
     }
     if (address.toLowerCase() !== agent.creator.toLowerCase()) {
-      alert('Only the agent creator can modify this agent.');
+      triggerNotification('error', 'Only the agent creator can modify this agent.');
       return;
     }
 
@@ -131,10 +138,10 @@ export const AgentDetails: React.FC<AgentDetailsProps> = ({ agent, onBack, onRun
       agent.pricePerRequest = priceWei;
       agent.systemPrompt = activePrompt;
       
-      alert('Agent updated successfully on-chain and database synchronized!');
+      triggerNotification('success', 'Agent updated successfully on-chain and database synchronized!');
     } catch (err: any) {
       console.error(err);
-      alert(err.message || 'Failed to update agent');
+      triggerNotification('error', err.message || 'Failed to update agent');
     } finally {
       setUpdating(false);
     }
@@ -174,7 +181,30 @@ axios.post('${apiEndpointUrl}', {
 }).then(res => console.log(res.data.output));`;
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 relative">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+            className={`fixed top-24 right-4 sm:right-8 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl border backdrop-blur-md max-w-sm ${
+              notification.type === 'success'
+                ? 'bg-emerald-950/80 border-emerald-500/30 text-emerald-400'
+                : notification.type === 'error'
+                ? 'bg-rose-950/80 border-rose-500/30 text-rose-400'
+                : 'bg-cyan-950/80 border-cyan-500/30 text-cyan-400'
+            }`}
+          >
+            {notification.type === 'success' && <CheckCircle size={16} />}
+            {notification.type === 'error' && <Activity size={16} className="text-rose-400" />}
+            {notification.type === 'info' && <Activity size={16} className="animate-spin text-cyan-400" />}
+            <span className="text-xs font-semibold leading-relaxed">{notification.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Back button */}
       <button 
@@ -410,7 +440,7 @@ axios.post('${apiEndpointUrl}', {
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-semibold text-brand-text-primary">Connected Vector Knowledge</h3>
               <button 
-                onClick={() => alert('Adding new knowledge source index...')}
+                onClick={() => triggerNotification('info', 'Adding new knowledge source index...')}
                 className="btn-secondary select-none cursor-pointer text-[10px] !px-3.5 !py-1.5"
               >
                 Connect Index

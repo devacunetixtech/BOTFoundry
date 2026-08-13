@@ -185,33 +185,54 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ onRunAgent }) => {
         </div>
       ) : (
         <motion.div 
-          layout
+          variants={{
+            hidden: { opacity: 0 },
+            show: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.08
+              }
+            }
+          }}
+          initial="hidden"
+          animate="show"
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
         >
           <AnimatePresence mode="popLayout">
             {filteredAgents.map(agent => (
               <motion.div 
-                layout
-                initial={{ opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.96 }}
-                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                whileHover={{ y: -4 }}
+                variants={{
+                  hidden: { opacity: 0, y: 15 },
+                  show: { 
+                    opacity: 1, 
+                    y: 0,
+                    transition: { type: "spring", stiffness: 200, damping: 22 }
+                  }
+                }}
+                exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
+                whileHover={{ y: -6 }}
                 key={agent.id} 
-                className="glass-panel-subtle p-6 bg-brand-surface border border-brand-border rounded-3xl flex flex-col justify-between h-full hover:shadow-md hover:border-brand-text-secondary/20 transition-all duration-300 relative group overflow-hidden"
+                className="glass-panel-subtle p-6 bg-brand-surface border border-brand-border rounded-3xl flex flex-col justify-between h-full hover:shadow-lg transition-all duration-300 relative group overflow-hidden"
               >
                 {/* Agent Header / Badges */}
                 <div>
-                  <div className="flex justify-between items-center">
-                    <span className="bg-brand-bg border border-brand-border/60 text-brand-text-primary text-[9px] uppercase font-extrabold tracking-wider px-2.5 py-0.5 rounded-full">
-                      {agent.category}
-                    </span>
-                    <div className="flex items-center gap-1">
-                      <Star size={11} className="text-amber-400 fill-amber-400" />
-                      <span className="text-[10px] font-bold text-brand-text-primary">{agent.rating || '4.5'}</span>
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="bg-brand-primary/10 border border-brand-primary/20 text-brand-primary text-[9px] uppercase font-extrabold tracking-wider px-2.5 py-0.5 rounded-full">
+                        {agent.category.toUpperCase()}
+                      </span>
+                      {/* Pulse Live Status */}
+                      <span className="flex items-center gap-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                        LIVE
+                      </span>
                     </div>
+                    {/* Reward/Earning Badge */}
+                    <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider select-none">
+                      ★ {agent.pricePerRequest !== '0' ? '90% Payout' : 'Free Agent'}
+                    </span>
                   </div>
-
+ 
                   {/* Icon + Title Block */}
                   <div className="flex gap-4 items-center mt-5">
                     <div className="w-11 h-11 rounded-2xl bg-brand-bg border border-brand-border flex items-center justify-center text-xl flex-shrink-0">
@@ -227,14 +248,14 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ onRunAgent }) => {
                       </span>
                     </div>
                   </div>
-
+ 
                   {/* Description text */}
                   <p className="text-xs text-brand-text-secondary mt-4 leading-relaxed line-clamp-3 font-medium">
                     {agent.description}
                   </p>
                 </div>
-
-                {/* Pricing & Usage details */}
+ 
+                {/* Bottom Metadata Bar */}
                 <div className="mt-6 space-y-4 pt-4 border-t border-brand-border/50">
                   <div className="flex justify-between items-center text-xs">
                     <div>
@@ -243,23 +264,26 @@ export const Marketplace: React.FC<MarketplaceProps> = ({ onRunAgent }) => {
                         {formatEtherVal(agent.pricePerRequest)}
                       </div>
                     </div>
-
+ 
                     <div className="text-right">
-                      <div className="text-[9px] uppercase tracking-wider text-brand-text-secondary font-bold">Installs</div>
+                      <div className="text-[9px] uppercase tracking-wider text-brand-text-secondary font-bold">Total Calls</div>
                       <div className="font-bold text-brand-text-primary text-xs mt-0.5 font-mono">
-                        {agent.installs || 120}
+                        {agent.usageCount || 0}
                       </div>
                     </div>
                   </div>
-
+ 
                   {/* Main Call to Action Button */}
-                  <button 
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 15 }}
                     onClick={() => handleRunClick(agent)}
                     className="btn-primary w-full text-xs py-2.5 px-4 select-none cursor-pointer"
                   >
                     <Play size={10} className="fill-current" />
                     Interact with Agent
-                  </button>
+                  </motion.button>
                 </div>
               </motion.div>
             ))}

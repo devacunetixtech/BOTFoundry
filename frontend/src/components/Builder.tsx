@@ -39,27 +39,40 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
   const [systemPrompt, setSystemPrompt] = useState<string>('');
   const [price, setPrice] = useState<string>('0.1');
 
+  // Custom validation states
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [shake, setShake] = useState<boolean>(false);
+
+  const triggerError = (msg: string) => {
+    setValidationError(msg);
+    setShake(true);
+    setTimeout(() => setShake(false), 500);
+  };
+
   const handleNext = () => {
+    setValidationError(null);
     if (step === 1 && (!name.trim() || !description.trim())) {
-      alert('Please fill out the agent name and description.');
+      triggerError('Please fill out the agent name and description.');
       return;
     }
     if (step === 2 && !systemPrompt.trim()) {
-      alert('Please define the system prompt for the AI agent.');
+      triggerError('Please define the system prompt for the AI agent.');
       return;
     }
     if (step === 3 && (parseFloat(price) < 0 || isNaN(parseFloat(price)))) {
-      alert('Price must be a valid number greater than or equal to 0.');
+      triggerError('Price must be a valid number greater than or equal to 0.');
       return;
     }
     setStep(step + 1);
   };
 
   const handleBack = () => {
+    setValidationError(null);
     setStep(step - 1);
   };
 
   const handleDeploy = async () => {
+    setValidationError(null);
     setLoading(true);
     setTxHash(null);
     try {
@@ -112,7 +125,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
       setStep(5);
     } catch (err: any) {
       console.error(err);
-      alert(err.message || 'Transaction rejected or contract interaction failed');
+      triggerError(err.reason || err.message || 'Transaction rejected or contract interaction failed');
     } finally {
       setLoading(false);
     }
@@ -147,8 +160,42 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
         <p className="text-xs text-brand-text-secondary mt-1.5 font-medium">Design and deploy your custom AI agent identities directly on BOT Chain</p>
       </div>
 
-      <div className="glass-panel-subtle max-w-2xl mx-auto p-8 sm:p-10 bg-brand-surface border border-brand-border rounded-3xl relative shadow-sm">
+      <motion.div 
+        animate={shake ? { x: [0, -8, 8, -8, 8, -4, 4, 0] } : {}}
+        transition={{ duration: 0.4 }}
+        className="glass-panel-subtle max-w-2xl mx-auto p-8 sm:p-10 bg-brand-surface border border-brand-border rounded-3xl relative shadow-sm"
+      >
       
+      {/* Custom Inline Validation Error Banner */}
+      <AnimatePresence>
+        {validationError && (
+          <motion.div 
+            initial={{ scale: 0.9, y: 15, opacity: 0 }}
+            animate={{ 
+              scale: 1, 
+              y: 0, 
+              opacity: 1, 
+              transition: { 
+                type: "spring", 
+                stiffness: 400, 
+                damping: 15 
+              } 
+            }}
+            exit={{ scale: 0.9, y: 10, opacity: 0 }}
+            className="flex items-center gap-2 border border-rose-500/20 bg-rose-500/5 p-4 rounded-2xl text-xs text-rose-400 mb-6"
+          >
+            <ShieldAlert size={14} className="text-rose-500 flex-shrink-0" />
+            <span className="font-semibold">{validationError}</span>
+            <button 
+              onClick={() => setValidationError(null)} 
+              className="ml-auto hover:text-brand-text-primary text-[10px] uppercase font-extrabold cursor-pointer"
+            >
+              Dismiss
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Step Indicators */}
       {step < 5 && (
         <div className="flex items-center justify-between mb-12 relative">
@@ -522,7 +569,7 @@ export const Builder: React.FC<BuilderProps> = ({ setCurrentTab }) => {
           </motion.div>
         )}
       </AnimatePresence>
-      </div>
+      </motion.div>
     </div>
   );
 };

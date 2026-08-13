@@ -68,6 +68,13 @@ export const VisualBuilder: React.FC<VisualBuilderProps> = ({
     { version: 'v1.0.0', date: '2026-08-05 10:12', comment: 'Initial registry deploy' },
     { version: 'v1.0.1', date: '2026-08-05 12:45', comment: 'Optimized system instruction latency' }
   ]);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+  const triggerNotification = (type: 'success' | 'error' | 'info', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => {
+      setNotification((prev) => prev?.message === message ? null : prev);
+    }, 5000);
+  };
 
   // Node connection builder state
   const [connectingFromId, setConnectingFromId] = useState<string | null>(null);
@@ -168,7 +175,30 @@ export const VisualBuilder: React.FC<VisualBuilderProps> = ({
   };
 
   return (
-    <div className="glass-panel-subtle bg-brand-surface border border-brand-border rounded-3xl h-[700px] overflow-hidden grid grid-cols-1 lg:grid-cols-[1fr_360px]">
+    <div className="glass-panel-subtle bg-brand-surface border border-brand-border rounded-3xl h-[700px] overflow-hidden grid grid-cols-1 lg:grid-cols-[1fr_360px] relative">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+            className={`fixed top-24 right-4 sm:right-8 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl border backdrop-blur-md max-w-sm ${
+              notification.type === 'success'
+                ? 'bg-emerald-950/80 border-emerald-500/30 text-emerald-400'
+                : notification.type === 'error'
+                ? 'bg-rose-950/80 border-rose-500/30 text-rose-400'
+                : 'bg-cyan-950/80 border-cyan-500/30 text-cyan-400'
+            }`}
+          >
+            {notification.type === 'success' && <CheckCircle size={16} />}
+            {notification.type === 'error' && <Zap size={16} className="text-rose-400" />}
+            {notification.type === 'info' && <Sparkles size={16} className="text-cyan-400" />}
+            <span className="text-xs font-semibold leading-relaxed">{notification.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
       {/* Visual Canvas Panel */}
       <div className="flex flex-col h-full relative select-none">
@@ -186,7 +216,7 @@ export const VisualBuilder: React.FC<VisualBuilderProps> = ({
           <div className="flex gap-2">
             <button 
               onClick={() => {
-                alert('Workflow configuration saved locally.');
+                triggerNotification('success', 'Workflow configuration saved locally.');
                 if (onSave) onSave(nodes, connections);
               }}
               className="inline-flex items-center gap-1 bg-brand-surface hover:bg-brand-elevated text-brand-text-primary border border-brand-border px-3 py-1.5 rounded-full text-[10px] font-semibold transition-all cursor-pointer"
@@ -614,13 +644,13 @@ export const VisualBuilder: React.FC<VisualBuilderProps> = ({
                     <p className="text-brand-text-secondary leading-snug">{v.comment}</p>
                     <div className="flex gap-2 mt-1">
                       <button 
-                        onClick={() => alert(`Reverting canvas to ${v.version}`)}
+                        onClick={() => triggerNotification('success', `Reverted canvas to ${v.version}`)}
                         className="text-[9px] font-bold text-brand-primary hover:underline"
                       >
                         Restore
                       </button>
                       <button 
-                        onClick={() => alert(`Showing JSON blueprint for ${v.version}`)}
+                        onClick={() => triggerNotification('info', `Showing JSON blueprint for ${v.version}`)}
                         className="text-[9px] font-bold text-brand-text-secondary hover:underline"
                       >
                         View Code

@@ -12,6 +12,7 @@ import { CreatorProfile } from './components/CreatorProfile';
 import { KnowledgeBaseManager } from './components/KnowledgeBaseManager';
 import { AgentDetails } from './components/AgentDetails';
 import { Sandbox } from './components/Sandbox';
+import { motion, useScroll, useSpring } from 'framer-motion';
 
 
 interface Agent {
@@ -37,6 +38,13 @@ const AppContent: React.FC = () => {
     return (localStorage.getItem('theme') as 'light' | 'dark') || 'dark';
   });
 
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
@@ -57,7 +65,12 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-brand-bg text-brand-text-primary flex flex-col font-sans transition-colors duration-300 overflow-x-hidden w-full max-w-full">
+    <div className="min-h-screen bg-brand-bg text-brand-text-primary flex flex-col font-sans transition-colors duration-300 w-full max-w-full">
+      {/* Sleek Spring-Animated Scroll Progress Bar */}
+      <motion.div 
+        className="fixed top-0 left-0 right-0 h-[2.5px] bg-brand-primary z-[100] origin-left shadow-[0_0_8px_#00f5d4]"
+        style={{ scaleX }}
+      />
       {/* Top Navbar */}
       <Navbar 
         currentTab={currentTab} 

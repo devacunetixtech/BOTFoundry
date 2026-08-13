@@ -131,11 +131,19 @@ export const Sandbox: React.FC = () => {
   const { address, isConnected, connectWallet, isTestnet, switchNetwork } = useWallet();
 
   const [solidityCode, setSolidityCode] = useState<string>('');
+  const [lastCompiledCode, setLastCompiledCode] = useState<string>('');
   const [prompt, setPrompt] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [isCompiling, setIsCompiling] = useState<boolean>(false);
   const [isDeploying, setIsDeploying] = useState<boolean>(false);
   const [isFixing, setIsFixing] = useState<boolean>(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+  const triggerNotification = (type: 'success' | 'error' | 'info', message: string) => {
+    setNotification({ type, message });
+    setTimeout(() => {
+      setNotification((prev) => prev?.message === message ? null : prev);
+    }, 5000);
+  };
 
   const [compileErrors, setCompileErrors] = useState<string[]>([]);
   const [deployError, setDeployError] = useState<string>('');
@@ -326,12 +334,13 @@ export const Sandbox: React.FC = () => {
       const data = await res.json();
       if (data.success && data.code) {
         setSolidityCode(data.code);
+        triggerNotification('success', 'Contract generated successfully!');
       } else {
-        alert(data.error || 'Failed to generate contract.');
+        triggerNotification('error', data.error || 'Failed to generate contract.');
       }
     } catch (err) {
       console.error(err);
-      alert('Error communicating with AI contract generator.');
+      triggerNotification('error', 'Error communicating with AI contract generator.');
     } finally {
       setIsGenerating(false);
     }
@@ -356,6 +365,7 @@ export const Sandbox: React.FC = () => {
         setAbi(data.abi);
         setBytecode(data.bytecode);
         setContractName(data.contractName);
+        setLastCompiledCode(solidityCode);
       } else {
         setCompileErrors(data.errors || [data.error || 'Compilation failed.']);
       }
@@ -399,6 +409,7 @@ export const Sandbox: React.FC = () => {
               setAbi(cData.abi);
               setBytecode(cData.bytecode);
               setContractName(cData.contractName);
+              setLastCompiledCode(data.code);
             } else {
               setCompileErrors(cData.errors || [cData.error || 'Compilation failed.']);
             }
@@ -409,11 +420,11 @@ export const Sandbox: React.FC = () => {
           }
         }, 300);
       } else {
-        alert(data.error || 'AI Debugger failed to return a solution.');
+        triggerNotification('error', data.error || 'AI Debugger failed to return a solution.');
       }
     } catch (err) {
       console.error(err);
-      alert('Error communicating with AI debugger.');
+      triggerNotification('error', 'Error communicating with AI debugger.');
     } finally {
       setIsFixing(false);
     }
@@ -426,12 +437,12 @@ export const Sandbox: React.FC = () => {
     }
 
     if (networkMismatch) {
-      alert(`Please switch your wallet network to ${targetNetwork === 'testnet' ? 'BOT Chain Testnet' : 'BOT Chain Mainnet'} first.`);
+      triggerNotification('error', `Please switch your wallet network to ${targetNetwork === 'testnet' ? 'BOT Chain Testnet' : 'BOT Chain Mainnet'} first.`);
       return;
     }
 
     if (!abi || !bytecode) {
-      alert('Please compile the contract successfully before deploying.');
+      triggerNotification('error', 'Please compile the contract successfully before deploying.');
       return;
     }
 
@@ -476,19 +487,19 @@ export const Sandbox: React.FC = () => {
       const contract = await factory.deploy(...formattedArgs);
       
       const deploymentReceipt = await contract.waitForDeployment();
-      const address = await contract.getAddress();
+      const deployedContractAddress = await contract.getAddress();
       const tx = contract.deploymentTransaction();
 
-      setDeployedAddress(address);
+      setDeployedAddress(deployedContractAddress);
       if (tx) {
         setDeployTxHash(tx.hash);
       }
 
       // Save to history
-      if (address && signer) {
+      if (deployedContractAddress && signer) {
         const userAddress = await signer.getAddress();
         const newHistoryItem = {
-          address: address,
+          address: deployedContractAddress,
           name: contractName || 'CustomContract',
           code: solidityCode,
           abi: abi || [],
@@ -518,7 +529,7 @@ export const Sandbox: React.FC = () => {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                address: address,
+                address: deployedContractAddress,
                 name: contractName || (targetNetwork === 'testnet' ? 'BohrFaucet' : 'BotFaucet'),
                 creator: userAddress,
                 network: targetNetwork,
@@ -571,11 +582,11 @@ export const Sandbox: React.FC = () => {
   const handleGaslessClaim = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!address) {
-      alert('Please connect your EVM wallet first to receive faucet tokens.');
+      triggerNotification('error', 'Please connect your EVM wallet first to receive faucet tokens.');
       return;
     }
     if (!captchaAnswer.trim()) {
-      alert('Please enter the captcha answer.');
+      triggerNotification('error', 'Please enter the captcha answer.');
       return;
     }
     setIsRequestingGasless(true);
@@ -627,14 +638,7 @@ export const Sandbox: React.FC = () => {
     setIsClaiming(true);
     try {
       if (!(window as any).ethereum) {
-        // Mock fallback
-        await new Promise(resolve => setTimeout(resolve, 800));
-        setContractBalance(prev => {
-          const val = parseFloat(prev) - 0.1;
-          return val < 0 ? '0' : val.toFixed(4);
-        });
-        alert(`Success! 0.1 ${tokenSymbol} has been transferred to your connected wallet.`);
-        return;
+        throw new Error('EVM Wallet provider not found. Please install MetaMask or Bitget Wallet.');
       }
       const provider = new ethers.BrowserProvider((window as any).ethereum);
       const signer = await provider.getSigner();
@@ -644,10 +648,10 @@ export const Sandbox: React.FC = () => {
       await tx.wait();
       
       await fetchContractBalance();
-      alert(`Success! 0.1 ${tokenSymbol} has been transferred to your connected wallet.`);
+      triggerNotification('success', `Success! 0.1 ${tokenSymbol} has been transferred to your connected wallet.`);
     } catch (err: any) {
       console.error(err);
-      alert(`Claim failed: ${err.reason || err.message || err}`);
+      triggerNotification('error', `Claim failed: ${err.reason || err.message || err}`);
     } finally {
       setIsClaiming(false);
     }
@@ -658,11 +662,7 @@ export const Sandbox: React.FC = () => {
     setIsFunding(true);
     try {
       if (!(window as any).ethereum) {
-        // Mock fallback
-        await new Promise(resolve => setTimeout(resolve, 800));
-        setContractBalance(prev => (parseFloat(prev) + 1.0).toFixed(4));
-        alert(`Success! Faucet funded with 1.0 ${tokenSymbol}.`);
-        return;
+        throw new Error('EVM Wallet provider not found. Please install MetaMask or Bitget Wallet.');
       }
       const provider = new ethers.BrowserProvider((window as any).ethereum);
       const signer = await provider.getSigner();
@@ -674,10 +674,10 @@ export const Sandbox: React.FC = () => {
       await tx.wait();
       
       await fetchContractBalance();
-      alert(`Success! Faucet funded with 1.0 ${tokenSymbol}.`);
+      triggerNotification('success', `Success! Faucet funded with 1.0 ${tokenSymbol}.`);
     } catch (err: any) {
       console.error(err);
-      alert(`Funding failed: ${err.reason || err.message || err}`);
+      triggerNotification('error', `Funding failed: ${err.reason || err.message || err}`);
     } finally {
       setIsFunding(false);
     }
@@ -688,11 +688,7 @@ export const Sandbox: React.FC = () => {
     setIsFunding(true);
     try {
       if (!(window as any).ethereum) {
-        // Mock fallback
-        await new Promise(resolve => setTimeout(resolve, 800));
-        setContractBalance(prev => (parseFloat(prev) + 1.0).toFixed(4));
-        alert(`Success! Contract funded with 1.0 ${tokenSymbol}.`);
-        return;
+        throw new Error('EVM Wallet provider not found. Please install MetaMask or Bitget Wallet.');
       }
       const provider = new ethers.BrowserProvider((window as any).ethereum);
       const signer = await provider.getSigner();
@@ -704,17 +700,40 @@ export const Sandbox: React.FC = () => {
       await tx.wait();
       
       await fetchContractBalance();
-      alert(`Success! Contract funded with 1.0 ${tokenSymbol}.`);
+      triggerNotification('success', `Success! Contract funded with 1.0 ${tokenSymbol}.`);
     } catch (err: any) {
       console.error(err);
-      alert(`Funding failed: ${err.reason || err.message || err}`);
+      triggerNotification('error', `Funding failed: ${err.reason || err.message || err}`);
     } finally {
       setIsFunding(false);
     }
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 relative">
+      {/* Toast Notification */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+            className={`fixed top-24 right-4 sm:right-8 z-50 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl border backdrop-blur-md max-w-sm ${
+              notification.type === 'success'
+                ? 'bg-emerald-950/80 border-emerald-500/30 text-emerald-400'
+                : notification.type === 'error'
+                ? 'bg-rose-950/80 border-rose-500/30 text-rose-400'
+                : 'bg-cyan-950/80 border-cyan-500/30 text-cyan-400'
+            }`}
+          >
+            {notification.type === 'success' && <CheckCircle size={16} />}
+            {notification.type === 'error' && <AlertTriangle size={16} />}
+            {notification.type === 'info' && <Loader2 size={16} className="animate-spin" />}
+            <span className="text-xs font-semibold leading-relaxed">{notification.message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
       {/* Header */}
       <section className="flex flex-col gap-2">
         <div>
@@ -761,14 +780,41 @@ export const Sandbox: React.FC = () => {
 
           {/* Solidity Code Editor */}
           <div className="glass-panel-subtle bg-brand-surface border border-brand-border rounded-3xl overflow-hidden flex flex-col">
-            <div className="border-b border-brand-border/60 bg-brand-bg/40 px-5 py-3.5 flex justify-between items-center">
+            <div className="border-b border-brand-border/60 bg-brand-bg/40 px-5 py-3 flex flex-wrap gap-2 justify-between items-center">
               <div className="flex items-center gap-2">
                 <Code2 size={14} className="text-brand-text-secondary" />
                 <span className="text-xs font-bold text-brand-text-primary">Solidity Source Code</span>
               </div>
-              <span className="text-[10px] bg-brand-elevated text-brand-text-secondary px-2.5 py-0.5 rounded font-mono">
-                0.8.20
-              </span>
+              <div className="flex items-center gap-2 select-none">
+                {isCompiling ? (
+                  <span className="text-[10px] font-bold text-cyan-400 bg-cyan-400/10 border border-cyan-400/25 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                    Compiling...
+                  </span>
+                ) : compileErrors.length > 0 ? (
+                  <span className="text-[10px] font-bold text-rose-400 bg-rose-400/10 border border-rose-400/20 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
+                    Syntax Errors
+                  </span>
+                ) : abi && solidityCode.trim() === lastCompiledCode.trim() ? (
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-400/10 border border-emerald-400/20 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    Compiled & Verified
+                  </span>
+                ) : solidityCode.trim() ? (
+                  <span className="text-[10px] font-bold text-amber-400 bg-amber-400/10 border border-amber-500/25 px-2.5 py-0.5 rounded-full flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                    Draft (Modified)
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-bold text-brand-text-secondary bg-brand-bg/50 border border-brand-border/40 px-2.5 py-0.5 rounded-full">
+                    Empty Editor
+                  </span>
+                )}
+                <span className="text-[10px] bg-brand-bg/60 text-brand-text-secondary border border-brand-border/55 px-2.5 py-0.5 rounded font-mono">
+                  0.8.20
+                </span>
+              </div>
             </div>
             
             <div className="relative flex-grow flex">
@@ -1349,7 +1395,7 @@ export const Sandbox: React.FC = () => {
 
 
                       } else {
-                        alert('Please enter a valid EVM contract address.');
+                        triggerNotification('error', 'Please enter a valid EVM contract address.');
                       }
                     }}
                     className="btn-secondary select-none cursor-pointer text-[10px] !px-4 !py-2"
@@ -1586,7 +1632,7 @@ export const Sandbox: React.FC = () => {
                             onClick={() => {
                               setSolidityCode(item.code);
                               setContractName(item.name);
-                              alert(`Loaded Solidity code for ${item.name} into the editor!`);
+                              triggerNotification('success', `Loaded Solidity code for ${item.name} into the editor!`);
                             }}
                             className="btn-secondary flex-1 select-none cursor-pointer text-[9px] !py-1.5"
                           >

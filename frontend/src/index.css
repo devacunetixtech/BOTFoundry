@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   --font-display: 'Plus Jakarta Sans', var(--font-sans);
   --font-mono: 'JetBrains Mono', monospace;
 
@@ -18,31 +18,51 @@
 }
 
 :root {
-  /* Emerald Dim / Dark Warm (material frontmatter) */
-  --bg: #10131a;
-  --surface: #191c22;
-  --surface-elevated: #272a31;
-  --border-color: rgba(255, 255, 255, 0.08);
+  /* Dark Mode (Default): Deep obsidian background (#0B0F17), card surfaces (#121824), subtle borders (#1E293B), primary accent Emerald (#00f5d4) */
+  --bg: #0B0F17;
+  --surface: #121824;
+  --surface-elevated: #1e293b;
+  --border-color: #1E293B;
   --primary: #00f5d4; /* Electric Emerald */
-  --accent: #4cd6fb;  /* Cyan/Tech Blue */
-  --text-primary: #e1e2eb;
-  --text-secondary: #b9cac4;
-  --outline: #83948f;
+  --accent: #00f5d4;  /* Emerald */
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --outline: #475569;
+  --surface-glass: rgba(18, 24, 36, 0.8);
+  --glow-color: rgba(0, 245, 212, 0.08);
   
   color-scheme: dark;
 }
 
+:root[data-theme="light"] {
+  /* Light Mode: Crisp off-white background (#F8FAFC), card surfaces (#FFFFFF), cool slate borders (#E2E8F0), and royal blue accents (#2563EB) */
+  --bg: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-elevated: #f1f5f9;
+  --border-color: #E2E8F0;
+  --primary: #2563EB; /* Royal Blue */
+  --accent: #2563EB;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --outline: #cbd5e1;
+  --surface-glass: rgba(255, 255, 255, 0.8);
+  --glow-color: rgba(37, 99, 235, 0.08);
+
+  color-scheme: light;
+}
+
 :root[data-theme="dark"] {
-  /* Premium Dark / Deep Midnight (Brand & Style specs) */
-  --bg: #060709;
-  --surface: #0B0E14;
-  --surface-elevated: #161B22;
-  --border-color: rgba(255, 255, 255, 0.1);
+  --bg: #0B0F17;
+  --surface: #121824;
+  --surface-elevated: #1e293b;
+  --border-color: #1E293B;
   --primary: #00f5d4;
-  --accent: #4cd6fb;
-  --text-primary: #e1e2eb;
-  --text-secondary: #b9cac4;
-  --outline: #83948f;
+  --accent: #00f5d4;
+  --text-primary: #ffffff;
+  --text-secondary: #94a3b8;
+  --outline: #475569;
+  --surface-glass: rgba(18, 24, 36, 0.8);
+  --glow-color: rgba(0, 245, 212, 0.08);
 
   color-scheme: dark;
 }
@@ -79,18 +99,18 @@ body {
 
 /* Modern Corporate Glassmorphism */
 .glass-panel-subtle {
-  background-color: rgba(11, 14, 20, 0.85);
+  background-color: var(--surface-glass);
   border: 1px solid var(--border-color);
   border-radius: 16px; /* 1rem for structural containers */
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 40px -10px rgba(0, 0, 0, 0.2);
   transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
 }
 
 .glass-panel-subtle:hover {
-  border-color: rgba(255, 255, 255, 0.22);
-  box-shadow: 0 0 20px rgba(76, 214, 251, 0.08); /* Tech Blue soft accent glow */
+  border-color: var(--primary);
+  box-shadow: 0 0 20px var(--glow-color); /* Soft primary accent glow */
 }
 
 /* Typography styles */

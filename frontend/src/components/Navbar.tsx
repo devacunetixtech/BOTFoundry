@@ -19,6 +19,7 @@ import {
   X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RollingNumber } from './RollingNumber';
 
 interface NavbarProps {
   currentTab: string;
@@ -165,20 +166,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Right Side: Wallet, Notifications, Profile, Theme switcher */}
         <div className="flex items-center gap-3">
 
-          {/* Network Status Badge */}
-          {isConnected ? (
-            isTestnet ? (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-brand-bg/50 text-brand-text-primary border border-brand-border rounded-full text-[10px] font-bold uppercase tracking-wider select-none">
-                <span className="pulse-dot-testnet" />
-                Testnet
-              </div>
-            ) : (
-              <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-brand-bg/50 text-brand-text-primary border border-brand-border rounded-full text-[10px] font-bold uppercase tracking-wider select-none">
-                <span className="pulse-dot-mainnet" />
-                Mainnet
-              </div>
-            )
-          ) : (
+          {/* Network Status / Connection Badge */}
+          {!isConnected && (
             <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-brand-bg/50 text-brand-text-secondary border border-brand-border rounded-full text-[10px] font-bold uppercase tracking-wider select-none">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-text-secondary/40" />
               Offline
@@ -188,7 +177,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Theme switcher */}
           <button 
             onClick={toggleTheme}
-            className="hidden md:flex p-2 hover:bg-brand-elevated rounded-full text-brand-text-secondary hover:text-brand-text-primary transition-colors"
+            className="hidden md:flex p-2 hover:bg-brand-elevated rounded-full text-brand-text-secondary hover:text-brand-text-primary transition-colors cursor-pointer"
             aria-label="Toggle theme"
           >
             {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
@@ -198,7 +187,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {isWrongNetwork && (
             <button
               onClick={() => switchNetwork('mainnet')}
-              className="flex items-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 px-3 py-1.5 rounded-full text-xs font-semibold"
+              className="flex items-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 px-3 py-1.5 rounded-full text-xs font-semibold cursor-pointer"
             >
               <AlertTriangle size={12} />
               <span className="hidden sm:inline">Wrong Network</span>
@@ -210,12 +199,39 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="relative">
               <button 
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 bg-brand-bg hover:bg-brand-elevated border border-brand-border pl-2.5 pr-3 py-1.5 rounded-full text-xs font-medium text-brand-text-primary select-none cursor-pointer transition-all shadow-sm"
+                className="flex items-center gap-1.5 bg-brand-bg hover:bg-brand-elevated border border-brand-border p-1 pr-3 py-1 rounded-full text-xs font-medium text-brand-text-primary select-none cursor-pointer transition-all shadow-sm group"
               >
-                {/* Connected status indicator */}
-                <span className={`w-1.5 h-1.5 rounded-full ${isTestnet ? 'bg-cyan-400 animate-pulse' : 'bg-emerald-400'}`} />
-                <span className="font-mono text-xs">{formatAddress(address!)}</span>
-                <ChevronDown size={11} className="text-brand-text-secondary" />
+                {/* Network Tag */}
+                <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold tracking-wider select-none ${
+                  isTestnet 
+                    ? 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20' 
+                    : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                }`}>
+                  {isTestnet ? 'TESTNET' : 'MAINNET'}
+                </span>
+                {/* Truncated Address with copy icon */}
+                <span className="font-mono text-xs ml-1 flex items-center gap-1 text-brand-text-primary">
+                  {formatAddress(address!)}
+                  <span 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCopy();
+                    }}
+                    className="text-brand-text-secondary hover:text-brand-text-primary p-0.5 rounded transition-colors"
+                    title="Copy address"
+                  >
+                    {copied ? <Check size={11} className="text-emerald-400 animate-bounce" /> : <Copy size={11} />}
+                  </span>
+                </span>
+                {/* Divider */}
+                <span className="w-[1px] h-3.5 bg-brand-border" />
+                {/* Real-time balance ticker with GSAP */}
+                <span className="font-mono font-semibold text-brand-text-primary flex items-center gap-1">
+                  <RollingNumber value={parseFloat(balance) || 0} decimals={4} />
+                  <span className="text-[10px] text-brand-text-secondary">{isTestnet ? 'tBOT' : 'BOT'}</span>
+                </span>
+                {/* Chevron */}
+                <ChevronDown size={11} className="text-brand-text-secondary transition-transform group-hover:translate-y-0.5" />
               </button>
 
               <AnimatePresence>

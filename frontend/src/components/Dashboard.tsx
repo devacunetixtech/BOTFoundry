@@ -320,10 +320,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ setCurrentTab, onEditAgent
             className="glass-panel-subtle p-5 bg-brand-surface hover:bg-brand-elevated border border-brand-border rounded-2xl text-left select-none cursor-pointer transition-all duration-300 group"
           >
             <div className="w-8 h-8 rounded-full bg-brand-bg flex items-center justify-center text-brand-primary group-hover:scale-105 transition-transform duration-300">
-              <Key size={14} />
+              <Database size={14} />
             </div>
-            <div className="font-semibold text-xs text-brand-text-primary mt-4">API Credentials</div>
-            <div className="text-[10px] text-brand-text-secondary mt-1">Manage private gateway integration tokens</div>
+            <div className="font-semibold text-xs text-brand-text-primary mt-4">Knowledge Base</div>
+            <div className="text-[10px] text-brand-text-secondary mt-1">Manage vector database document embeddings</div>
           </button>
         </div>
       </section>

@@ -202,14 +202,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const connectWallet = async () => {
     const ethereum = walletProvider || getEthereumProvider();
     if (!ethereum) {
-      console.warn('No EVM wallet detected. Entering mock wallet demo mode.');
-      setIsConnecting(true);
-      await new Promise(resolve => setTimeout(resolve, 600));
-      setAddress('0x71C7656EC7ab88b098defB751B7401B5f6d8976F');
-      setBalance('124.5000');
-      setChainId('0x2a5');
-      setIsConnected(true);
-      setIsConnecting(false);
+      alert('EVM Wallet provider not found. Please install MetaMask or Bitget Wallet to connect.');
       return;
     }
     
@@ -304,6 +297,11 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     priceWei: string,
     metadataURI: string
   ): Promise<{ txHash: string; agentId: number }> => {
+    const ethereum = walletProvider || getEthereumProvider();
+    if (!ethereum) {
+      throw new Error('EVM Wallet provider not found. Please install MetaMask or Bitget Wallet.');
+    }
+
     try {
       const contract = await getContractInstance();
       console.log(`Registering Agent: "${name}" Category: "${category}" Price: ${priceWei} wei`);
@@ -349,6 +347,11 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     metadataURI: string,
     isActive: boolean
   ): Promise<string> => {
+    const ethereum = walletProvider || getEthereumProvider();
+    if (!ethereum) {
+      throw new Error('EVM Wallet provider not found. Please install MetaMask or Bitget Wallet.');
+    }
+
     try {
       const contract = await getContractInstance();
       const tx = await contract.updateAgent(agentId, name, category, priceWei, metadataURI, isActive);
@@ -361,6 +364,11 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const payForAgentOnChain = async (agentId: number, priceWei: string): Promise<string> => {
+    const ethereum = walletProvider || getEthereumProvider();
+    if (!ethereum) {
+      throw new Error('EVM Wallet provider not found. Please install MetaMask or Bitget Wallet.');
+    }
+
     try {
       const contract = await getContractInstance();
       console.log(`Sending payment for agent #${agentId}. Amount: ${priceWei} wei`);
@@ -377,8 +385,10 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   // Read the caller's (or a given account's) claimable balance from the pull-payment ledger.
   // Uses a read-only provider so it works without prompting the wallet.
   const getPendingWithdrawal = async (account?: string): Promise<string> => {
-    const ethereum = getEthereumProvider();
-    if (!ethereum || !contractAddress) return '0';
+    const ethereum = walletProvider || getEthereumProvider();
+    if (!ethereum || !contractAddress) {
+      return '0';
+    }
     const target = account || address;
     if (!target) return '0';
     try {
@@ -394,6 +404,11 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Claim accumulated earnings (creator revenue, treasury fees, or refunded overpayment).
   const withdrawEarnings = async (): Promise<string> => {
+    const ethereum = walletProvider || getEthereumProvider();
+    if (!ethereum) {
+      throw new Error('EVM Wallet provider not found. Please install MetaMask or Bitget Wallet.');
+    }
+
     try {
       const contract = await getContractInstance();
       const tx = await contract.withdraw();
